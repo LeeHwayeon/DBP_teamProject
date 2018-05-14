@@ -2,4 +2,17 @@ extends layout
 
 //- 로그인 페이지
 block content
-  p 로그인!
+  form(action='/signin',method='get')
+    .form-group
+      label(for="InputId") Id
+      input#InputId.form-control(type="id" aria-describedby="IdHelp" placeholder="Enter Id")
+    .form-group
+      label(for="InputPassword") Password
+      input#InputPassword1.form-control(type="password" placeholder="Password")
+    button.btn.btn-primary(type="signin") Sign in
+    div.sub 
+      a(href='/authentication') Signup
+        | 
+        | /
+        |
+      a(href='/reset-password') Reset Password

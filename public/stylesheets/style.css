@@ -1,0 +1,26 @@
+body {
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  }
+.main{
+    margin: 30px;
+    text-align: center;
+}
+.form{
+    position: relative;
+}
+.form-group{
+    width: 50%;
+    padding-left: 50px;
+    margin: auto;
+}
+.btn.btn-primary{
+    background-color: #000000;
+    border-color: #000000;
+    padding: 10px;
+    margin: 10px;
+    float: right;
+    margin-right: 300px;
+}
+.sub{
+    text-align: center;
+}
