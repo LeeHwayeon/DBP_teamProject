@@ -1,0 +1,9 @@
+nav.navbar.navbar-expand-lg.navbar-dark.bg-light.bg-dark
+  a.navbar-brand(href="/") Prompt
+  button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation")
+    span.navbar-toggler-icon
+  #navbarNav.collapse.navbar-collapse
+    ul.navbar-nav
+      if state == 'beforeLogin'
+        block beforeLogin
+          include ./beforeLogin
