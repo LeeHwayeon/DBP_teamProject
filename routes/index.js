@@ -1,4 +1,6 @@
 var express = require('express');
+var oracledb = require('oracledb');
+var dbConfig = require('../oracle/dbconfig');
 var router = express.Router();
 var oracledb = require('oracledb');
 var dbConfig = require('../oracle/dbconfig');
@@ -10,7 +12,7 @@ router.get('/', function(req, res, next) {
       console.error(err.message);
       return;
     }
-    connection.execute("select * from users", (err, result) => {
+    connection.execute("select * from classroom", (err, result) => {
       if (err) {
         console.error(err.message);
         return;
