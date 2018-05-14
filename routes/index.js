@@ -2,6 +2,8 @@ var express = require('express');
 var oracledb = require('oracledb');
 var dbConfig = require('../oracle/dbconfig');
 var router = express.Router();
+var oracledb = require('oracledb');
+var dbConfig = require('../oracle/dbconfig');
 
 // 메인 페이지
 router.get('/', function(req, res, next) {
