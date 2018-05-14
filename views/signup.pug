@@ -1,0 +1,20 @@
+
+extends layout
+
+//- 회원가입 페이지
+block content
+  h1.main Sign up
+  form(action="#", method='get')
+    .form-group
+      label(for="inputID") ID
+      input#inputEmail4.form-control(type="id" placeholder="Id")
+    .form-group
+      label(for="inputPassword") Password
+      input#inputPassword4.form-control(type="password" placeholder="Password")
+    .form-group
+      label(for="inputResident_registration_number") Resident_registration_number
+      input#inputAddress.form-control(type="text" placeholder="111111-1111111")
+    .form-group
+      label(for="inputEducation") Education
+      input#inputAddress2.form-control(type="text" placeholder="University graduation or Master's degree ..")
+    button.btn.btn-primary(type="submit") Sign in

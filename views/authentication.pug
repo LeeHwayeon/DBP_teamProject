@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    form(action="/signup", method="get")
+      .form-group
+        label(for="exampleInputAuthenticationNumber") Authentication number
+        input#exampleInputEmail1.form-control(type="text" aria-describedby="athentication" placeholder="Enter Authentication Number")
+      button.btn.btn-primary(type="submit") Submit
