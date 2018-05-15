@@ -2,14 +2,14 @@ extends layout
 
 //- 로그인 페이지
 block content
-  form(action='/signin',method='get')
+  form#signinForm(action='/', method='post')
     .form-group
       label(for="InputId") Id
-      input#InputId.form-control(type="id" aria-describedby="IdHelp" placeholder="Enter Id")
+      input#InputId.form-control(type="id" name="id" aria-describedby="IdHelp" placeholder="Enter Id")
     .form-group
       label(for="InputPassword") Password
-      input#InputPassword1.form-control(type="password" placeholder="Password")
-    button.btn.btn-primary(type="signin") Sign in
+      input#InputPassword1.form-control(type="password" name="password" placeholder="Password")
+    button.btn.btn-primary(type="submit") Sign in
     div.sub 
       a(href='/authentication') Signup
         | 
