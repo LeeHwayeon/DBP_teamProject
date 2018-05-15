@@ -87,6 +87,15 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   router.get('/projects', (req, res, next) => {
     res.render('projects', { state: 'beforeLogin' });
   });
+
+  // 마이페이지
+  router.get('/mypage', (req, res, next) => {
+    if (req.session.user['job'] === 'd') {
+      return res.render('mypage', {state: 'developer'});
+    } else {
+      return res.render('mypage', {state: 'management'});
+    }
+  });
 });
 
 module.exports = router;
