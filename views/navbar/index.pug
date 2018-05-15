@@ -7,3 +7,9 @@ nav.navbar.navbar-expand-lg.navbar-dark.bg-light.bg-dark
       if state == 'beforeLogin'
         block beforeLogin
           include ./beforeLogin
+      else if state == 'management'
+        block management
+          include ./nav_management
+      else if state == 'developer'
+        block developer
+          include ./nav_developer
