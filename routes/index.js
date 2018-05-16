@@ -35,6 +35,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 로그인 처리
   router.post('/', (req, res, next) => {
+    var user = {};
     connection.execute('select * from developer where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
       if (err) {
         console.error(err.message);
@@ -46,11 +47,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           if (result.rows.length === 0) {
             // 개발자, 관리자 둘 다 아닐 때
             alert("없는 계정입니다.");
-            // window.alert("없는 계정입니다.");
             res.redirect('back');
           } else {
             // 관리자일때
-            var user = {};
             for (let i = 0; i < result.metaData.length; i++) {
               user[result.metaData[i].name] = result.rows[0][i];
               user['job'] = 'm';
@@ -61,7 +60,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         });
       } else {
         // 개발자일때
-        var user = {};
         for (let i = 0; i < result.metaData.length; i++) {
           user[result.metaData[i].name] = result.rows[0][i];
           user['job'] = 'd';
@@ -78,12 +76,12 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.redirect('/');
   })
 
-  //회원가입 가입번호 입력
+  // 회원가입 가입번호 입력
   router.get('/authentication', (req, res, next) => {
     res.render('authentication', { state: 'beforeLogin' });
   });
 
-  //프로젝트 페이지
+  // 프로젝트 페이지
   router.get('/projects', (req, res, next) => {
     res.render('projects', { state: 'beforeLogin' });
   });
@@ -95,6 +93,30 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     } else {
       return res.render('mypage', {state: 'management'});
     }
+  });
+
+  // 고객 관리 페이지(경영진)
+  router.get('/aboutClient', (req, res, next) => {
+    var clients = {};
+    connection.execute('select * from client', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutClient', { state: 'management', clients: result.rows });
+    });
+  });
+
+  // 고객 등록 기능
+  router.post('/addClient', (req, res, next) => {
+    connection.execute('insert into client(num, client_name) values(seq_client.nextval, \'' + req.body.newName + '\')', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("고객이 등록되었습니다.");
+      return res.render('index', { state: 'management'});
+    });
   });
 });
 
