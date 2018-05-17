@@ -1,0 +1,30 @@
+extends layout
+
+//- 프로젝트 등록 페이지
+block content
+    form(action="/addProject", method="post")
+      .form-group
+        .row.mt-3
+          .col.text-center
+            h2 프로젝트 추가
+        .row.align-items-center
+          .col.mt-4
+            h3 Project name
+            input.form-control(type="text", placeholder="project name", name="name")
+        .row.align-items-center.mt-4
+          .col
+            h3 Begin date
+            input.form-control(type="date", placeholder="starts", name="begin_date")
+        .row.align-items-center.mt-4
+          .col
+            h3 End date
+            input.form-control(type="date", placeholder="ends", name="end_date")
+        .row.align-items-center.mt-4
+          .col
+            h3 Client
+            select(name="client", size="1")
+              each client in clients
+                option(value=client[0]) #{client[1]}(#{client[0]})
+        .row.justify-content-start.mt-4
+          .col(style="margin-bottom: 1em")
+            button.btn.btn-dark(type="submit") Add project

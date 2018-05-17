@@ -4,6 +4,8 @@ var dbConfig = require('../oracle/dbconfig');
 var router = express.Router();
 var alert = require('alert-node');
 
+oracledb.autoCommit = true;
+
 oracledb.getConnection(dbConfig, (err, connection) => {
   if (err) {
     console.error(err.message);
@@ -35,6 +37,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 로그인 처리
   router.post('/', (req, res, next) => {
+    var user = {};
     connection.execute('select * from developer where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
       if (err) {
         console.error(err.message);
@@ -48,11 +51,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           if (result.rows.length === 0) {
             // 개발자, 관리자 둘 다 아닐 때
             alert("없는 계정입니다.");
-            // window.alert("없는 계정입니다.");
             res.redirect('back');
           } else {
             // 관리자일때
-            var user = {};
             for (let i = 0; i < result.metaData.length; i++) {
               user[result.metaData[i].name] = result.rows[0][i];
               user['job'] = 'management';
@@ -63,7 +64,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         });
       } else {
         // 개발자일때
-        var user = {};
         for (let i = 0; i < result.metaData.length; i++) {
           user[result.metaData[i].name] = result.rows[0][i];
           user['job'] = 'developer';
@@ -81,14 +81,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.redirect('/');
   })
 
-  //회원가입 가입번호 입력
+  // 회원가입 가입번호 입력
   router.get('/authentication', (req, res, next) => {
     res.render('authentication', { state: 'beforeLogin' });
-  });
-
-  //프로젝트 페이지
-  router.get('/projects', (req, res, next) => {
-    res.render('projects', { state: 'beforeLogin' });
   });
 
   // 마이페이지
@@ -97,11 +92,53 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     user = req.session.user;
     return res.render('mypage', {user: user});
   });
-  // 정보수정
-  router.get('/mypage/edit', (req, res, next) => {
-    user = req.session.user;
-    res.render('mypage_edit', {user: user});
-  })
+
+  // 고객 관리 페이지(경영진)
+  router.get('/aboutClient', (req, res, next) => {
+    var clients = {};
+    connection.execute('select * from client', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutClient', { state: 'management', clients: result.rows });
+    });
+  });
+
+  // 고객 등록 기능
+  router.post('/addClient', (req, res, next) => {
+    connection.execute('insert into client(num, client_name) values(seq_client.nextval, \'' + req.body.newName + '\')', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("고객이 등록되었습니다.");
+      return res.render('index', { state: 'management'});
+    });
+  });
+
+  // 프로젝트 등록 페이지로 이동
+  router.get('/addProject', (req, res, next) => {
+    connection.execute('select * from client', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('addProject', { state: 'management', clients: result.rows });
+    });
+  });
+
+  // 프로젝트 등록
+  router.post('/addProject', (req, res, next) => {
+    connection.execute('insert into project(num, project_name, begin_date, end_date, order_customer) values(seq_project.nextval, \'' + req.body.name + '\', to_date(\'' + req.body.begin_date + '\', \'yyyy-MM-dd\'), to_date(\'' + req.body.end_date + '\', \'yyyy-MM-dd\'), ' + req.body.client + ')', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("프로젝트가 등록되었습니다.");
+      return res.render('index', { state: 'management'});
+    });
+  });
 });
 
 module.exports = router;
