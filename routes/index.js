@@ -62,38 +62,28 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('authentication',{state:'beforeLogin'});
   });
 
-  //회원가입 가입번호 입력 처리
-  router.post('/signup', (req, res, next) => {
+  // 회원가입 가입번호 입력 처리
+  router.post('/toSignup', (req, res, next) => {
     connection.execute('select developer_SIGN_IN_NUMBER from authentication_numbers where developer_sign_in_number=\''+req.body.sign_in_number+'\'',(err, result)=>{
       if(err){
         console.error(err.message);
         return;
       }
-      //개발자 아닐 때
-      if(result.rows.length === 0){
+      // 개발자 아닐 때
+      if (result.rows.length === 0) {
         connection.execute('select MANAGEMENT_SIGN_IN_NUMBER from authentication_numbers where management_sign_in_number=\''+req.body.sign_in_number+'\'',(err,result)=>{
-          if(result.rows.length === 0){
-            //개발자, 경영진 둘 다 아닐 때
-            alert("등록되지 않은 사용자입니다.");
+          if (result.rows.length === 0) {
+            // 개발자, 경영진 둘 다 아닐 때
+            alert("가입할 수 없습니다.");
             res.redirect('back');
-          } else{
-            //경영진
-            var user={};
-            for(let i=0; i<result.metaData[i].length; i++){
-              user[result.metaData[i].management_sign_in_number]=result.rows[i];
-            }
-            req.session.user =user;
-            return res.render('signup',{state:'beforeLogin'});
+          } else {
+            // 경영진
+            return res.render('signup', { state: 'beforeLogin', job: 'management' });
           }
         });
-      }else{
-        //개발자
-        var user ={};
-        for (let i=0; i<result.metaData.length; i++){
-          user[result.metaData[i].developer_sign_in_number]=result.rows[0][i];
-        }
-        req.session.user=user;
-        return res.render('signup',{state:'beforeLogin'});
+      } else {
+        // 개발자
+        return res.render('signup', { state: 'beforeLogin', job: 'developer' });
       }
     });
   });
