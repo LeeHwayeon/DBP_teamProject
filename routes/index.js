@@ -4,6 +4,8 @@ var dbConfig = require('../oracle/dbconfig');
 var router = express.Router();
 var alert = require('alert-node');
 
+oracledb.autoCommit = true;
+
 oracledb.getConnection(dbConfig, (err, connection) => {
   if (err) {
     console.error(err.message);
@@ -81,11 +83,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('authentication', { state: 'beforeLogin' });
   });
 
-  // 프로젝트 페이지
-  router.get('/projects', (req, res, next) => {
-    res.render('projects', { state: 'beforeLogin' });
-  });
-
   // 마이페이지
   router.get('/mypage', (req, res, next) => {
     if (req.session.user['job'] === 'd') {
@@ -115,6 +112,29 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return;
       }
       alert("고객이 등록되었습니다.");
+      return res.render('index', { state: 'management'});
+    });
+  });
+
+  // 프로젝트 등록 페이지로 이동
+  router.get('/addProject', (req, res, next) => {
+    connection.execute('select * from client', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('addProject', { state: 'management', clients: result.rows });
+    });
+  });
+
+  // 프로젝트 등록
+  router.post('/addProject', (req, res, next) => {
+    connection.execute('insert into project(num, project_name, begin_date, end_date, order_customer) values(seq_project.nextval, \'' + req.body.name + '\', to_date(\'' + req.body.begin_date + '\', \'yyyy-MM-dd\'), to_date(\'' + req.body.end_date + '\', \'yyyy-MM-dd\'), ' + req.body.client + ')', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("프로젝트가 등록되었습니다.");
       return res.render('index', { state: 'management'});
     });
   });
