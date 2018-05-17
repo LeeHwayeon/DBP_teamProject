@@ -17,7 +17,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     var state = '';
     if (req.session.user === undefined) {
       state = 'beforeLogin';
-    } else if (req.session.user.job === 'd') {
+    } else if (req.session.user.job === 'developer') {
       state = 'developer';
     } else {
       state = 'management';
@@ -43,7 +43,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         console.error(err.message);
         return;
       }
-      console.log(result);
       // 개발자가 아닐 때
       if (result.rows.length === 0) {
         connection.execute('select * from management where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
@@ -68,7 +67,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           user[result.metaData[i].name] = result.rows[0][i];
           user['job'] = 'developer';
         }
-        console.log(user);
         req.session.user = user;   
         return res.render('index', { state: 'developer'});
       }
@@ -90,7 +88,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // 정보조회
   router.get('/mypage', (req, res, next) => {
     user = req.session.user;
-    return res.render('mypage', {user: user});
+    return res.render('mypage', { state: user['job'], user: user});
   });
 
   // 고객 관리 페이지(경영진)
