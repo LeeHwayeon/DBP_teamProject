@@ -40,9 +40,11 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         console.error(err.message);
         return;
       }
+      console.log(result);
       // 개발자가 아닐 때
       if (result.rows.length === 0) {
         connection.execute('select * from management where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
+          
           if (result.rows.length === 0) {
             // 개발자, 관리자 둘 다 아닐 때
             alert("없는 계정입니다.");
@@ -53,7 +55,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
             var user = {};
             for (let i = 0; i < result.metaData.length; i++) {
               user[result.metaData[i].name] = result.rows[0][i];
-              user['job'] = 'm';
+              user['job'] = 'management';
             }
             req.session.user = user;
             return res.render('index', { state: 'management'});
@@ -64,8 +66,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         var user = {};
         for (let i = 0; i < result.metaData.length; i++) {
           user[result.metaData[i].name] = result.rows[0][i];
-          user['job'] = 'd';
+          user['job'] = 'developer';
         }
+        console.log(user);
         req.session.user = user;   
         return res.render('index', { state: 'developer'});
       }
@@ -89,13 +92,16 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   });
 
   // 마이페이지
+  // 정보조회
   router.get('/mypage', (req, res, next) => {
-    if (req.session.user['job'] === 'd') {
-      return res.render('mypage', {state: 'developer'});
-    } else {
-      return res.render('mypage', {state: 'management'});
-    }
+    user = req.session.user;
+    return res.render('mypage', {user: user});
   });
+  // 정보수정
+  router.get('/mypage/edit', (req, res, next) => {
+    user = req.session.user;
+    res.render('mypage_edit', {user: user});
+  })
 });
 
 module.exports = router;
