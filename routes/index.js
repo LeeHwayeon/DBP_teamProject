@@ -98,4 +98,22 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   });
 });
 
+  //내프로젝트 정보
+  router.get('/myprojects', (req, res, next) => {
+    oracledb.getConnection(dbConfig, (err, connection) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+    connection.execute('select * from project_input where developer_id =\''+ req.body.id +'\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      res.render('myprojects', { state: 'beforeLogin', result: result.rows });
+    });
+  });
+});
+
 module.exports = router;
