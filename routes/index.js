@@ -25,37 +25,84 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('index', { state });
   });
 
-  // // 회원가입 페이지로 이동
-  // router.get('/signup', (req, res, next) => {
-  //   res.render('signup', { state: 'beforeLogin' });
-  // });
+  //회원가입시 필요한 확인 절차..!
+  function validateForm(form, options) {
+    var id = form.id || "";
+    var password = form.password || "";
+    var name = form.name || "";
+    var resident_registration= form.resident_registration || "";
+    var education = form.education || "";
+    var joincompany = form.joincompany || "";
 
-  // //회원가입 처리
-  // router.post('/signup',(req, res, next) => {
-  //   var error = validateForm(req.body, 'singup',{needPassword:true});
-  //   User.findOne({id:req.body.id}, function(err, user){
-  //     if(err){
-  //       return next(err);
-  //     }
-  //     if(user){
-  //       alert("이미 사용중인 아이디입니다.");
-  //       return res.redirect('back');
-  //     }
-  //     //개발자이면 개발자 테이블에 넣는다..
-  //     connection.execute("insert into developer (id,pwd,user_name,resident_registration_number,education,join_company_date) values(:id,:password,:name,:resident_registration,:education,:joincompany)",
-  //     [req.body.id,req.body,password,req.body.name,req.body.resident_registration,req.body.education,req.body.joincompany]
-  //     ,{autoCommit:true},function(err, result){
-  //       if(err){
-  //         console.error(err.message);
-  //         return;
-  //       }else{
-  //         console.log("rows inserted:"+result.rowsAffected);
-  //         return;
-  //       }
-  //       res.render('signin',{state : 'beforLogin'})
-  //     });
-  //   });
-  // });
+    id = id.trim();
+    password = password.trim();
+    name = name.trim();
+    resident_registration = resident_registration.trim();    
+    education = education.trim();
+    joincompany = joincompany.trim();
+
+    if (!id) {
+      return 'Id is required.';
+    }
+    if (!name) {
+      return 'Name is required.';
+    }
+    if (!resident_registration) {
+      return 'Resident registration number is required.';
+    }
+    
+    if (!education) {
+      return 'Education is required.';
+    }
+  
+    if (!joincompany) {
+      return 'Join company date is required.';
+    }
+  
+    if (!form.password && options.needPassword) {
+      return 'Password is required.';
+    }
+  
+    if (form.password !== form.password_confirmation) {
+      return 'Passsword do not match.';
+    }
+  
+    if (form.password.length < 6) {
+      return 'Password must be at least 6 characters.';
+    }
+  
+    return null;
+  }
+
+  // 회원가입 페이지로 이동
+  router.get('/signup', (req, res, next) => {
+    res.render('signup', { state: 'beforeLogin' });
+  });
+
+  // 회원가입 처리
+  router.post('/signup',(req, res, next) => {
+    var error = validateForm(req.body, 'singup',{needPassword:true});
+    var user = {};
+    User.findOne({id:req.body.id}, function(err, user){
+      if(err){
+        return next(err);
+      }
+      if(user){
+        alert("이미 사용중인 아이디입니다.");
+        return res.redirect('back');
+      }
+      connection.execute('insert into developer (num,id,pwd,user_name,resident_registration_number,education,join_company_date) values (seq_developer.nextval, \'' + req.body.id + '\', \''+ req.body,password +'\',\'' +req.body.name+'\',\''+req.body.resident_registration+'\',\''+req.body.education+'\',\''+req.body.joincompany+'\')',
+      (err, result) => {
+        if(err){
+          console.error(err.message);
+          return;
+        }
+        alert("회원가입이 완료되었습니다. 로그인 하세요.");
+        return res.render('signin',{state : 'beforLogin'});
+      });
+    });
+  });
+
 
   // 회원가입 가입번호 입력 페이지로 이동
   router.get('/authentication',(req,res,next) =>{
@@ -190,6 +237,26 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.render('index', { state: 'management'});
     });
   });
+
+  //직원 관리 페이지(경영진)
+  router.get('/aboutDeveloper', (req, res, next) => {
+    var developers = {};
+    connection.execute('select developer.id, developer.user_name, developer.work_experience, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
+    (err, result)=>{
+      if(err){
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutDeveloper',{state:'management', developers: result.rows});      
+    });
+  }); 
+
+
+  // 동료평가 페이지(개발자)
+  // router.post('/peer_evaluation',( req, res, next) => {
+  //   connection.execute('insert into peer_evaluation')
+  // });
+
 
 });
 
