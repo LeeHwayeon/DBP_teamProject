@@ -22,4 +22,7 @@ block content
     .form-group
       label(for="inputJoincompanydate") Join Company Date
       input#inputJoincompanydate.form-control(type="text" name="joincompanydate" placeholder="YY/MM/DD")
+    .form-group
+      label(for="inputJob") Job
+      input.form-control(type="text" name="job" value=`${job}` readonly)
     button.btn.btn-primary(type="submit") Sign in
