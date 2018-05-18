@@ -21,8 +21,7 @@ block content
             each p in projects
               tr
                 td
-                  input(type="radio" name="prj" value=`${p}`)
-                  input(type="hidden" name="prj_name" value=`${p[1]}`)
+                  input(type="radio" name="prj" value=`${p[0]}`)
                 th(scope="row")= p[1]
                 td #{moment(p[2]).format('YYYY-MM-DD')}
                 td #{moment(p[3]).format('YYYY-MM-DD')}

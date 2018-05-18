@@ -1,0 +1,16 @@
+extends layout
+
+//- 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
+block content
+  form(action="#", method="post")
+    .row.mt-3
+      .col.text-center
+        h2 프로젝트 인원 투입
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 선택된 프로젝트
+        input.form-control(type="text" name="project" value=`${project}` readonly)
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 투입일 선택
+        input.form-control(type="date" name="join_date")

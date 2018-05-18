@@ -3,6 +3,7 @@ var oracledb = require('oracledb');
 var dbConfig = require('../oracle/dbconfig');
 var router = express.Router();
 var alert = require('alert-node');
+var moment = require('moment');
 
 oracledb.autoCommit = true;
 
@@ -203,22 +204,30 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  // PM 등록 페이지로 이동 : PM이 될 개발자 선택
+  // PM 등록 페이지 : PM이 될 개발자 선택
   router.post('/appointPM', (req, res, next) => {
     if (req.body.prj === undefined) {
       alert("선택된 프로젝트가 없습니다.");
       return res.redirect("back");
     }
-    connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, result) => {
+    connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, developers) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      res.render('appointDeveloper', { state: 'management', developer: result.rows, project: req.body.prj, name: req.body.prj_name });
+      connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.prj + '', (err, selectedPrj) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
+        return res.render('appointDeveloper', { state: 'management', developer: developers.rows, project_num: req.body.prj, selected });
+      });
+      
     });
   });
 
-  // PM 등록 페이지로 이동 : PM 등록 처리
+  // PM 등록 페이지 : PM 등록 처리
   router.post('/addPMtable', (req, res, next) => {
     if (req.body.developer === undefined) {
       alert("PM으로 선택된 개발자가 없습니다.");
@@ -228,12 +237,12 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       alert("투입일을 입력하세요.");
       return res.redirect("/");
     }
-    connection.execute('insert into pm(developer_num, project_num) values(' + req.body.developer + ', ' + req.body.project.substring(0, 1) + ')', (err, result) => {
+    connection.execute('insert into pm(developer_num, project_num) values(' + req.body.developer + ', ' + req.body.project_num + ')', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + req.body.project.substring(0, 1) + ', ' + req.body.developer + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
+      connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + req.body.project_num + ', ' + req.body.developer + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
         if (err) {
           console.error(err.message);
           return;
@@ -242,6 +251,40 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return res.render('index', { state: 'management'});
       });
     });
+  });
+
+  // 프로젝트 인원 투입 페이지로 이동
+  router.get('/prjInput', (req, res, next) => {
+    connection.execute('select project.num, project_name, client_name from project, client where project.order_customer = client.num', (err, prj) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, dev) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        return res.render('prjInput', { state: 'management', projects: prj.rows, developers: dev.rows });
+      });
+    });
+  });
+  
+  //- 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
+  router.post('/configureInput', (req, res, next) => {
+    // 프로젝트 번호
+    console.log(req.body.project);
+    // 개발자 번호
+    console.log(req.body.developer);
+    // 개발자 번호 한명일 경우
+    console.log(typeof req.body.developer === 'string');
+    // 개발자 번호 여러명일 경우
+    console.log(typeof req.body.developer === 'object');
+
+    res.render('configureInput', { state: 'management' });
+    // connection.execute('', (err, result) => {
+
+    // });
   });
 });
 
