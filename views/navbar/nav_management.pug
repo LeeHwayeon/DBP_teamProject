@@ -1,22 +1,22 @@
 block management
-  li.nav-item
-    a.nav-link(href="/signout") 로그아웃
-  li.nav-item
-    a.nav-link(href="/mypage") 마이페이지
-  li.nav-item
-    a.nav-link(href="#") 프로젝트 관리
-  li.nav-item
-    a.nav-link(href="/developer_manage") 직원 관리
-  li.nav-item
-    a.nav-link(href="/aboutClient") 고객 관리
-  li.nav-item
-    a.nav-link(href="/addProject") 프로젝트 등록
-  li.nav-item
-    a.nav-link(href="/showPrjNoPM") PM 등록
-  li.nav-item
-    a.nav-link(href="#") 프로젝트 인원 투입
-  li.nav-item
-    a.nav-link(href="#") 개발자 투입#{'&'}방출
-  li.nav-item
-    a.nav-link(href="#") 평가 조회
-
+  ul.navbar-nav.mr-auto
+    li.nav-item
+      a.nav-link(href="#") 프로젝트 관리
+    li.nav-item
+      a.nav-link(href="/developer_manage") 직원 관리
+    li.nav-item
+      a.nav-link(href="/aboutClient") 고객 관리
+    li.nav-item
+      a.nav-link(href="/addProject") 프로젝트 등록
+    li.nav-item
+      a.nav-link(href="/showPrjNoPM") PM 등록
+    li.nav-item
+      a.nav-link(href="#") 프로젝트 인원투입
+    li.nav-item
+      a.nav-link(href="#") 개발자 투입#{'&'}방출
+    li.nav-item
+      a.nav-link(href="#") 평가조회
+  ul.navbar-nav.justify-content-end.d-none.d-lg-flex.ml-md-auto
+    li.nav-item.active
+      a.nav-link(href="/mypage") 마이페이지
+  a.btn.btn-white.btn-empty.ml-md-3(href="/signout") Sign out

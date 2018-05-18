@@ -205,19 +205,29 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // PM 등록 페이지로 이동 : PM이 될 개발자 선택
   router.post('/appointPM', (req, res, next) => {
-    // 프로젝트 번호
-    console.log(req.body.prj);
+    if (req.body.prj === undefined) {
+      alert("선택된 프로젝트가 없습니다.");
+      return res.redirect("back");
+    }
     connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      res.render('appointDeveloper', { state: 'management', developer: result.rows, project: req.body.prj });
+      res.render('appointDeveloper', { state: 'management', developer: result.rows, project: req.body.prj, name: req.body.prj_name });
     });
   });
 
   // PM 등록 페이지로 이동 : PM 등록 처리
   router.post('/addPMtable', (req, res, next) => {
+    if (req.body.developer === undefined) {
+      alert("PM으로 선택된 개발자가 없습니다.");
+      return res.redirect("/");
+    }
+    if (req.body.join_date.length === 0) {
+      alert("투입일을 입력하세요.");
+      return res.redirect("/");
+    }
     connection.execute('insert into pm(developer_num, project_num) values(' + req.body.developer + ', ' + req.body.project.substring(0, 1) + ')', (err, result) => {
       if (err) {
         console.error(err.message);

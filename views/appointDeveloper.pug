@@ -9,7 +9,7 @@ block content
       .row.align-items-center.mt-4
         .col
           h3.mb-3.ml-3 선택된 프로젝트
-          input.form-control(type="text" name="project" value=`${project}` readonly)
+          input.form-control(type="text" name="project" value=`${name}` readonly)
       .row.align-items-center.mt-4
         .col
           h3.mb-3.ml-3 투입일 선택
@@ -38,9 +38,9 @@ block content
                   td= d[3]
                   td= d[4]
                   td= d[5]
-                  td= d[6]
+                  td #{moment(d[6]).format('YYYY-MM-DD')}
                   td= d[7]
       .row.justify-content-start.mt-4
         .col(style="margin-bottom: 1em")
-          button.btn.btn-dark(type="submit") Appoint PM
+          button.btn.btn-dark.mr-3(type="submit", style="float: right") Appoint PM
       
