@@ -191,6 +191,12 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  //평가조회
+  router.get('/evaluation', (req, res, next) => {
+    res.render('evaluation', { state: 'peer_evaluation' });
+    connection.execute('select * from peer_evaluation')
+  })
+
 });
 
 module.exports = router;
