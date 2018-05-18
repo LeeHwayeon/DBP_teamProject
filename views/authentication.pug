@@ -1,8 +1,9 @@
 extends layout
 
+//-회원가입 가입번호 입력 페이지
 block content
-    form(action="/signup", method="get")
+    form(action="/toSignup", method="post")
       .form-group
         label(for="exampleInputAuthenticationNumber") Authentication number
-        input#exampleInputEmail1.form-control(type="text" aria-describedby="athentication" placeholder="Enter Authentication Number")
+        input#exampleInputEmail1.form-control(type="text" name="sign_in_number" aria-describedby="authentication" placeholder="Enter Authentication Number")
       button.btn.btn-primary(type="submit") Submit

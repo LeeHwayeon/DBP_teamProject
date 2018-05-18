@@ -2,5 +2,12 @@ extends layout
 
 //- 마이 페이지
 block content
-  p 마이페이지 
-  p #{state}
+    p 마이페이지
+    div(name="mypage")
+        li name : #{user.USER_NAME}
+        li Resident Registration Number : #{user.RESIDENT_REGISTRATION_NUMBER}
+        li Education : #{user.EDUCATION}
+        li Work Experience : #{user.WORK_EXPERIENCE}
+        li Join Company Date : #{moment(user.JOIN_COMPANY_DATE).format('YYYY-MM-DD')}
+        li Skill Set : #{user.SKILL_SET}
+        li Job : #{user.job}
