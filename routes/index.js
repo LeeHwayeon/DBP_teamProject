@@ -191,6 +191,48 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  // PM 등록 페이지로 이동 : 프로젝트 선택
+  router.get('/showPrjNoPM', (req, res, next) => {
+    // PM이 없는 프로젝트에 대한 정보만.
+    connection.execute('select project.num, project_name, begin_date, end_date, client_name from project, client where client.num = project.order_customer minus select project.num, project_name, begin_date, end_date, client_name from client, project, project_input where client.num = project.order_customer and project.num = project_input.project_num and project_input.role_in_project = \'pm\'', (err, projects) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      res.render('showPrjNoPM', { state: 'management', projects: projects.rows });
+    });
+  });
+
+  // PM 등록 페이지로 이동 : PM이 될 개발자 선택
+  router.post('/appointPM', (req, res, next) => {
+    // 프로젝트 번호
+    console.log(req.body.prj);
+    connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      res.render('appointDeveloper', { state: 'management', developer: result.rows, project: req.body.prj });
+    });
+  });
+
+  // PM 등록 페이지로 이동 : PM 등록 처리
+  router.post('/addPMtable', (req, res, next) => {
+    connection.execute('insert into pm(developer_num, project_num) values(' + req.body.developer + ', ' + req.body.project.substring(0, 1) + ')', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + req.body.project.substring(0, 1) + ', ' + req.body.developer + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        alert("PM이 등록되었습니다.");
+        return res.render('index', { state: 'management'});
+      });
+    });
+  });
 });
 
 module.exports = router;
