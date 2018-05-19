@@ -270,21 +270,77 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
   
-  //- 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
+  // 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
   router.post('/configureInput', (req, res, next) => {
-    // 프로젝트 번호
-    console.log(req.body.project);
-    // 개발자 번호
-    console.log(req.body.developer);
-    // 개발자 번호 한명일 경우
-    console.log(typeof req.body.developer === 'string');
-    // 개발자 번호 여러명일 경우
-    console.log(typeof req.body.developer === 'object');
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.project + '', (err, selectedPrj) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
 
-    res.render('configureInput', { state: 'management' });
-    // connection.execute('', (err, result) => {
+      // 선택한 개발자가 한 명인 경우
+      if (typeof req.body.developer === 'string') {
+        connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer where num = ' + req.body.developer + '', (err, developer) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          return res.render('configureInput', { state: 'management', selected, project_num: req.body.project, developer: developer.rows });
+        });
+      } else if (typeof req.body.developer === 'object') {
+        // 선택한 개발자가 여러명인 경우
+        var query = 'select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer where num = ' + req.body.developer[0];
+        for (let i = 1; i < req.body.developer.length; i++) {
+          query += ' or num = ' + req.body.developer[i];
+        }
+        connection.execute(query, (err, developer) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          return res.render('configureInput', { state: 'management', selected, project_num: req.body.project, developer: developer.rows });
+        });
+      } else {
+        alert("선택된 개발자가 없습니다.");
+        return res.redirect('back');
+      }
+    });
+  });
 
-    // });
+  // 프로젝트 인원 투입 페이지 : Project input 테이블에 추가
+  router.post('/addProjectInput', (req, res, next) => {
+    if (typeof req.body.join_date === 'string') {
+      // 한명
+      if (req.body.join_date.length === 0) {
+        alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
+        return res.render('index', { state: 'management'});
+      }
+      let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num + ', \'' + req.body.role + '\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')' + ', null, null)';
+      connection.execute(query, (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+      });
+    } else {
+      // 여러명
+      if (req.body.join_date.includes('')) {
+        alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
+        return res.render('index', { state: 'management'});
+      }
+      for (let i = 0; i < req.body.developer_num.length; i++) {
+        let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num[i] + ', \'' + req.body.role[i] + '\', to_date(\'' + req.body.join_date[i] + '\', \'yyyy-MM-dd\')' + ', null, null)';
+        connection.execute(query, (err, result) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+        });
+      }
+    }
+    alert("해당 인원이 프로젝트에 투입되었습니다.");
+    return res.render('index', { state: 'management' });
   });
 });
 

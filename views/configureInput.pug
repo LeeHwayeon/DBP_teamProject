@@ -2,15 +2,53 @@ extends layout
 
 //- 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
 block content
-  form(action="#", method="post")
+  form(action="/addProjectInput", method="post")
     .row.mt-3
       .col.text-center
         h2 프로젝트 인원 투입
     .row.align-items-center.mt-4
       .col
         h3.mb-3.ml-3 선택된 프로젝트
-        input.form-control(type="text" name="project" value=`${project}` readonly)
+        input.form-control(type="text" name="project" value=`${selected}` readonly)
+        input(type="hidden" name="project_num" value=`${project_num}`)
     .row.align-items-center.mt-4
       .col
-        h3.mb-3.ml-3 투입일 선택
-        input.form-control(type="date" name="join_date")
+        h3.mb-3.ml-3 개발자별 해당 프로젝트 투입일, 역할 선택
+        table.table
+          thead
+            tr
+              th(scope="col") ID
+              th(scope="col") 이름
+              th(scope="col") 주민번호
+              th(scope="col") 최종학력
+              th(scope="col") 경력
+              th(scope="col") 입사일
+              th(scope="col") skill
+              th(scope="col") 투입일 선택
+              th(scope="col") 역할 선택
+          tbody
+            each d in developer
+              input(type="hidden" name="developer_num" value=`${d[0]}`)
+              tr
+                th(scope="row")= d[1]
+                td= d[2]
+                td= d[3]
+                td= d[4]
+                td= d[5]
+                td #{moment(d[6]).format('YYYY-MM-DD')}
+                td= d[7]
+                td
+                  input.form-control(type="date" name='join_date')
+                td
+                  select(name="role", size="1")
+                    option(value='pl') PL
+                    option(value='analyst') analyst
+                    option(value='planner') planner
+                    option(value='programmer') programmer
+                    option(value='tester') tester
+    .row.justify-content-start.mt-4
+      .col(style="margin-bottom: 1em")
+        button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입
+    
+
+    
