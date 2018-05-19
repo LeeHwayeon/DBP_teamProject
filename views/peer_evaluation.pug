@@ -2,7 +2,7 @@ extends layout
 
 //- 동료평가(+pm평가) 페이지(개발자)
 block content
-  h1.main Evaluation
+  h1.main 동료평가 페이지
   form(action="/peer_evaluation", method='post')
     .form-group
       label(for="inputPnum") Project Number
@@ -21,8 +21,8 @@ block content
       input#inputworkcontent.form-control(type="text" name="work_content" placeholder="프로젝트 이해도 높음 ..")
     .form-group
       label(for="inputCommunicationScore") Communication Score
-      input#inputcommunicationscore.form-control(type="number" name="work_score" placeholder="1~10")
+      input#inputcommunicationscore.form-control(type="number" name="communication_score" placeholder="1~10")
     .form-group
       label(for="inputCommunicationContent") Communication content
-      input#inputcommunicationcontent.form-control(type="text" name="work_content" placeholder="프로젝트 멤버들 간의 소통 및 관계")
+      input#inputcommunicationcontent.form-control(type="text" name="communication_content" placeholder="프로젝트 멤버들 간의 소통 및 관계")
     button.btn.btn-primary(type="submit") 평가 등록  
