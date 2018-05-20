@@ -19,12 +19,8 @@ block content
             tr
               th(scope="col") ID
               th(scope="col") 이름
-              th(scope="col") 주민번호
-              th(scope="col") 최종학력
-              th(scope="col") 경력
-              th(scope="col") 입사일
-              th(scope="col") skill
               th(scope="col") 투입일 선택
+              th(scope="col") 경험할 skill
               th(scope="col") 역할 선택
           tbody
             each d in developer
@@ -32,13 +28,10 @@ block content
               tr
                 th(scope="row")= d[1]
                 td= d[2]
-                td= d[3]
-                td= d[4]
-                td= d[5]
-                td #{moment(d[6]).format('YYYY-MM-DD')}
-                td= d[7]
                 td
                   input.form-control(type="date" name='join_date')
+                td
+                  input.form-control(type="text" name="skill")
                 td
                   select(name="role", size="1")
                     option(value='pl') PL
