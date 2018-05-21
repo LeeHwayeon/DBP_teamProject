@@ -1,0 +1,47 @@
+extends layout
+
+//- PM 등록 페이지 : PM이 될 개발자 선택
+block content
+  form(action="/addPMtable", method="post")
+    .row.mt-3
+      .col.text-center
+        h2 PM 등록
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 선택된 프로젝트
+        input.form-control(type="text" name="project" value=`${selected}` readonly)
+        input(type="hidden" name="project_num" value=`${project_num}`)
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 투입일 선택
+        input.form-control(type="date" name="join_date")
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 개발자 선택
+        table.table
+          thead
+            tr
+              th(scope="col") 
+              th(scope="col") ID
+              th(scope="col") 이름
+              th(scope="col") 주민번호
+              th(scope="col") 최종학력
+              th(scope="col") 경력
+              th(scope="col") 입사일
+              th(scope="col") skill
+          tbody
+            each d in developer
+              tr
+                td
+                  input(type="radio" name="developer" value=`${d[0]}`)
+                th(scope="row")= d[1]
+                td= d[2]
+                td= d[3]
+                td= d[4]
+                td= d[5]
+                td #{moment(d[6]).format('YYYY-MM-DD')}
+                td= d[7]
+    .row.justify-content-start.mt-4
+      .col(style="margin-bottom: 1em")
+        button.btn.btn-dark.mr-3(type="submit", style="float: right") Appoint PM
+    

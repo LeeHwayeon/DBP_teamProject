@@ -2,17 +2,22 @@ extends layout
 
 //- 로그인 페이지
 block content
-  form#signinForm(action='/', method='post')
-    .form-group
-      label(for="InputId") Id
-      input#InputId.form-control(type="id" name="id" aria-describedby="IdHelp" placeholder="Enter Id")
-    .form-group
-      label(for="InputPassword") Password
-      input#InputPassword1.form-control(type="password" name="password" placeholder="Password")
-    button.btn.btn-primary(type="submit") Sign in
-    div.sub 
-      a(href='/authentication') Signup
-        | 
-        | /
-        |
-      a(href='/reset-password') Reset Password
+  section.fdb-block
+    .container
+      .row.justify-content-center
+        .col-12.col-md-8.col-lg-7.col-xl-5.text-center
+          .fdb-box.fdb-touch
+            form(action='/', method='POST')
+              .row
+                .col
+                  h1 Sign in
+              .row.mt-4
+                .col
+                  input.form-control(type="id", name="id", placeholder="Enter Id", required, autofocus)
+              .row.mt-4
+                .col
+                  input.form-control.mb-1(type="password", name="password", placeholder="Enter Password", required, autofocus)
+              .row.mt-4
+                .col
+                  button.btn.btn-black.btn-empty(type="submit") Sign in
+
