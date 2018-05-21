@@ -28,3 +28,14 @@ body {
 #signinForm {
     margin-top: 5%;
 }
+
+.card-img {
+    width: 100%;
+    height: 500px;
+}
+
+.carousel-caption {
+    font-size : 60px;
+    font-family: "Kaushan Script", cursive;
+    height : 300px;
+}
