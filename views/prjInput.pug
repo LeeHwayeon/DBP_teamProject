@@ -9,7 +9,7 @@ block content
     .row.align-items-center.mt-4
       .col.ml-3
         h3.mb-3 프로젝트 선택
-        select(name="project", size="1")
+        select.custom-select(name="project", size="1")
           each project in projects
             option(value=project[0]) #{project[1]} by #{project[2]}
     .row.align-items-center.mt-4

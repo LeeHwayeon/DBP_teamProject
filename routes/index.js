@@ -388,6 +388,11 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  // 평가조회 페이지
+  router.get('/evaluation', (req, res, next) => {
+    res.render('evaluation', { state: 'management' });
+  });
+
 });
 
 module.exports = router;

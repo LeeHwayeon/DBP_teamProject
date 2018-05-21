@@ -1,6 +1,6 @@
 body {
-    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  }
+    font-family: 'Nanum Gothic', sans-serif !important;
+}
 .main{
     margin: 30px;
     text-align: center;
@@ -27,6 +27,11 @@ body {
 
 #signinForm {
     margin-top: 5%;
+}
+
+.card {
+    border: none !important;
+    border-radius: 0% !important;
 }
 
 .card-img {
