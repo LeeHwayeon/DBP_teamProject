@@ -96,26 +96,26 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 로그인 처리
   router.post('/', (req, res, next) => {
-    var user = {};
     connection.execute('select * from developer where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
       if (err) {
         console.error(err.message); 
         return;
       }
+
+      var user = {};
       // 개발자가 아닐 때
       if (result.rows.length === 0) {
         connection.execute('select * from management where ID = \'' + req.body.id + '\' and pwd = \'' + req.body.password + '\'', (err, result) => {
-          
           if (result.rows.length === 0) {
             // 개발자, 관리자 둘 다 아닐 때
-            alert("없는 계정입니다.");
+            alert("로그인 할 수 없습니다.");
             res.redirect('back');
           } else {
             // 관리자일때
             for (let i = 0; i < result.metaData.length; i++) {
               user[result.metaData[i].name] = result.rows[0][i];
-              user['job'] = 'management';
             }
+            user['job'] = 'management';
             req.session.user = user;
             return res.render('index', { state: 'management'});
           }
@@ -124,10 +124,10 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         // 개발자일때
         for (let i = 0; i < result.metaData.length; i++) {
           user[result.metaData[i].name] = result.rows[0][i];
-          user['job'] = 'developer';
         }
-        req.session.user = user;   
-        return res.render('index', { state: 'developer'});
+        user['job'] = 'developer';
+        req.session.user = user; 
+        res.render('index', { state: 'developer'});
       }
     });
   });
@@ -139,10 +139,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   });
 
   // 마이페이지
-  // 정보조회
   router.get('/mypage', (req, res, next) => {
     user = req.session.user;
-    return res.render('mypage', { state: user['job'], user: user});
+    return res.render('mypage', { state: user['job'], user: user });
   });
 
   // 고객 관리 페이지(경영진)
@@ -353,6 +352,40 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     }
     alert("해당 인원이 프로젝트에 투입되었습니다.");
     return res.render('index', { state: 'management' });
+  });
+
+  // 개인정보 수정 페이지로 이동
+  router.get('/editProfile', (req, res, next) => {
+    res.render('editProfile', { state: req.session.user.job, user: req.session.user });
+  });
+
+  // 개인정보 수정 처리
+  router.put('/editProfile', (req, res, next) => {
+    if (req.body.pwd.length < 6) {
+      alert("6글자 이상의 새로운 비밀번호를 입력하세요.");
+      return res.render('editProfile', { state: req.session.user.job })
+    }
+    
+    let query = 'update ' + req.session.user.job + ' set id = \'' + req.body.id + '\', pwd = \'' + req.body.pwd + '\', resident_registration_number = \'' + req.body.resident_registration_number + '\', education = \'' + req.body.education + '\'';
+    if (req.session.user.job === 'developer') {
+      query += ', join_company_date = to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')';
+      req.session.user.JOIN_COMPANY_DATE = req.body.join_date;
+    }
+    query += ' where num = ' + req.session.user.NUM + '';
+    req.session.user.ID = req.body.id;
+    req.session.user.PWD = req.body.pwd;
+    req.session.user.RESIDENT_REGISTRATION_NUMBER = req.body.resident_registration_number;
+    req.session.user.education = req.body.education;
+
+    connection.execute(query, (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      
+      alert("정보가 수정되었습니다.");
+      res.render('index', { state: req.session.user.job });
+    });
   });
 });
 
