@@ -190,7 +190,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.render('index', { state: 'management'});
     });
   });
-
+  
   // PM 등록 페이지로 이동 : 프로젝트 선택
   router.get('/showPrjNoPM', (req, res, next) => {
     // PM이 없는 프로젝트에 대한 정보만.
@@ -387,6 +387,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       res.render('index', { state: req.session.user.job });
     });
   });
+
 });
 
 module.exports = router;
