@@ -26,41 +26,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('index', { state });
   });
 
-  // // 회원가입 페이지로 이동
-  // router.get('/signup', (req, res, next) => {
-  //   res.render('signup', { state: 'beforeLogin' });
-  // });
-
-  // //회원가입 처리
-  // router.post('/signup',(req, res, next) => {
-  //   var error = validateForm(req.body, 'singup',{needPassword:true});
-  //   User.findOne({id:req.body.id}, function(err, user){
-  //     if(err){
-  //       return next(err);
-  //     }
-  //     if(user){
-  //       alert("이미 사용중인 아이디입니다.");
-  //       return res.redirect('back');
-  //     }
-  //     //개발자이면 개발자 테이블에 넣는다..
-  //     connection.execute("insert into developer (id,pwd,user_name,resident_registration_number,education,join_company_date) values(:id,:password,:name,:resident_registration,:education,:joincompany)",
-  //     [req.body.id,req.body,password,req.body.name,req.body.resident_registration,req.body.education,req.body.joincompany]
-  //     ,{autoCommit:true},function(err, result){
-  //       if(err){
-  //         console.error(err.message);
-  //         return;
-  //       }else{
-  //         console.log("rows inserted:"+result.rowsAffected);
-  //         return;
-  //       }
-  //       res.render('signin',{state : 'beforLogin'})
-  //     });
-  //   });
-  // });
-
   // 회원가입 가입번호 입력 페이지로 이동
-  router.get('/authentication',(req,res,next) =>{
-    res.render('authentication',{state:'beforeLogin'});
+  router.get('/authentication', (req,res,next) =>{
+    res.render('authentication', { state:'beforeLogin' });
   });
 
   // 회원가입 가입번호 입력 처리
@@ -86,6 +54,34 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         // 개발자
         return res.render('signup', { state: 'beforeLogin', job: 'developer' });
       }
+    });
+  });
+
+  // 회원가입 처리
+  router.post('/signUp', (req, res, next) => {
+    connection.execute('select count(id) from (select id from management union select id from developer) where id = \'' + req.body.id + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      if (result.rows[0][0] === 1) {
+        alert('중복된 id입니다.');
+        return res.render('authentication', { state: 'beforeLogin' });
+      }
+    });
+
+    var query = 'insert into ' + req.body.job + ' values (';
+    // 시퀀스 꼬여서 일단 임시로.
+    query += (req.body.job === 'developer') ? 'developer_seq' : 'seq_client';
+    query += '.nextval, \'' + req.body.id + '\', \'' + req.body.password + '\', \'' + req.body.name + '\', \'' + req.body.resident_registration_number + '\', \'' + req.body.education + '\'';
+    query += (req.body.job === 'developer') ? ', to_date(\'' + req.body.joincompanydate + '\', \'yyyy-MM-dd\'), null)' : ')';
+    connection.execute(query, (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert('회원가입이 완료되었습니다.');
+      res.render('index', { state: 'beforeLogin' });
     });
   });
   
@@ -209,7 +205,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       alert("선택된 프로젝트가 없습니다.");
       return res.redirect("back");
     }
-    connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, developers) => {
+    connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, developers) => {
       if (err) {
         console.error(err.message);
         return;
@@ -259,7 +255,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         console.error(err.message);
         return;
       }
-      connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, dev) => {
+      connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, dev) => {
         if (err) {
           console.error(err.message);
           return;
@@ -388,6 +384,169 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  // 평가조회 페이지
+  router.get('/evaluation', (req, res, next) => {
+    res.render('evaluation', { state: 'management' });
+  });
+
+  // 직원 관리 페이지(경영진)
+  // 현재 프로젝트에 참여중인 직원들에 대한 정보만 있는 듯.
+  router.get('/aboutDeveloper', (req, res, next) => {
+    var developers = {};
+    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
+    (err, result)=>{
+      if(err){
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutDeveloper',{state:'management', developers: result.rows});      
+    });
+  });
+
+  //동료평가(프로젝트 조회) 페이지로 이동
+  router.get('/aboutPeerEvaluation', (req, res, next) =>{
+    user = req.session.user;
+    var projects = {};
+    //로그인 한 사용자가 속해있는 프로젝트 목록을 가져온다.
+    connection.execute('select project.project_name from project,project_input,developer where developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num', (err,result) => {
+      if(err){
+        console.log(err.message);
+        return;
+      }
+      if(result.rows.length === 0){
+        alert("평가할 프로젝트가 없습니다.");
+        return res.redirect('back');
+      }
+      return res.render('aboutPeerEvaluation', {state:'developer', projects:result.rows});  
+    });
+  });
+  
+  //동료평가 페이지(개발자)
+  router.post('/topeer_evaluation',(req, res, next) => {
+    //선택된 프로젝트에서의 사용자 직무 검색 (선택된 프로젝트를 해줘야 한다.... 선택된...!!!!!!!!!!!!!!!!!)
+    connection.execute('select project_input.role_in_project from project_input, developer where developer.id=\''+ req.session.user.ID +'\'  and developer.num=project_input.developer_num', (err, result) =>{
+      console.log(result);
+      //직무가 pm이면
+      if(result.rows==='PM'){
+        connection.execute('select * from pm_evaluation, project where project.num=pm_evaluation.project_num', (err, result) => {
+          //평가한 내용이 없다면
+          if(result.rows.length === 0){
+            if(err){
+              console.log(err.message);
+              return;
+            }
+            //평가내용을 pm평가 테이블에 insert
+            connection.execute('insert into pm_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
+              if(err){
+                console.log(err.message);
+                return;
+              }
+              alert('PM평가가 완료되었습니다.');
+              return res.render('index', { state : 'developer' });
+            });
+          }
+          //평가한 내용이 이미 있다면
+          else{
+            alert('이미 평가가 완료되었습니다.');
+            return res.redirect('back');
+          }
+        });
+      }
+      //직무가 pm아닌 개발자들이라면
+      else{
+        connection.execute('select * from peer_evaluation, project where project.num=peer_evaluation.project_num', (err, result) =>{
+          //평가한 내용이 없다면
+          if(result.rows.length === 0){
+            if(err){
+              console.log(err.message);
+              return;
+            }
+            //평가 내용을 동료평가 테이블에 insert
+            connection.execute('insert into peer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
+              if(err){
+                console.error(err.message);
+                return;
+              }
+              alert('동료평가가 완료되었습니다.');
+              return res.render('index', { state : 'developer' });              
+            });
+          }
+          //평가한 내용이 이미 있다면
+          else{
+            alert('이미 평가가 완료되었습니다.');
+            return res.redirect('back');
+          }
+        });
+      } 
+    });
+  });
+
+  //내프로젝트 정보
+  router.get('/myprojects', (req, res, next) => {
+    connection.execute('select project_input.* from project_input, DEVELOPER where developer.id= \'' + req.session.user.ID + '\' and project_input.DEVELOPER_NUM = DEVELOPER.NUM', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      return res.render('myprojects', { state: 'developer', result: result.rows });
+    });
+  });
+
+  //고객평가 페이지로 이동
+  router.get('/customer_evaluation', (req, res, next) => {
+    res.render('customer_evaluation', { state: 'developer' });
+  });
+
+  //고객평가
+  router.post('/customer_evaluation', (req, res, next) => {
+    connection.execute('insert into customer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=> {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("고객평가 등록 완료.");
+      return res.render('customer_evaluation', { state: 'developer'});
+    });
+  });
+
+  //프로젝트관리
+  router.get('/aboutProject', (req, res, next) => {
+    connection.execute('select * from project where BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      return res.render('aboutProject', { state: 'management', result: result.rows});
+    });
+  });
+
+  //프로젝트관리_검색창
+  router.post('/showProject', (req, res, next) => {
+    connection.execute('select * from project where num = \'' + req.body.projectNum + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutProject', { state: 'management', result: result.rows});
+    });
+  });
+
+  //프로젝트 투입,방출
+  router.get('/inAndOut', (req, res, next) => {
+    connection.execute('', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      return res.render('inAndOut', { state: 'management', result: result.rows});
+    });
+  });
+
 });
+
+
 
 module.exports = router;

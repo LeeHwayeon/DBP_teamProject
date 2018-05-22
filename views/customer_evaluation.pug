@@ -1,0 +1,25 @@
+extends layout
+
+//- 고객평가
+block content
+  h1.main 고객평가
+  form(action="/peer_evaluation", method='post')
+    .form-group
+      label(for="inputPnum") Project Number
+      input#inputpum.form-control(type="number" name="pnum" placeholder="Enter Project Number")
+    .form-group
+      label(for="inputEvaluated") Evaluated
+      input#inputevaluated.form-control(type="number" name="evaluated" placeholder="Evaluated")
+    .form-group
+      label(for="inputWorkScore") Work Score
+      input#inputworkscore.form-control(type="number" name="work_score" min="0" max="100" placeholder="0~100점")
+    .form-group
+      label(for="inputWorkContent") Work content
+      input#inputworkcontent.form-control(type="text" name="work_content" placeholder="ex) 고객의 요구사항을 다 만족함")
+    .form-group
+      label(for="inputCommunicationScore") Communication Score
+      input#inputcommunicationscore.form-control(type="number" name="communication_score" min="0" max="100" placeholder="0~100점")
+    .form-group
+      label(for="inputCommunicationContent") Communication content
+      input#inputcommunicationcontent.form-control(type="text" name="communication_content" placeholder="ex) 고객의 피드백을 즉각 반영함")
+    button.btn.btn-primary(type="submit") 평가 등록 

@@ -9,7 +9,7 @@ block content
     .row.align-items-center.mt-4
       .col.ml-3
         h3.mb-3 프로젝트 선택
-        select(name="project", size="1")
+        select.custom-select(name="project", size="1")
           each project in projects
             option(value=project[0]) #{project[1]} by #{project[2]}
     .row.align-items-center.mt-4
@@ -24,7 +24,6 @@ block content
               th(scope="col") 주민번호
               th(scope="col") 최종학력
               th(scope="col") 경력
-              th(scope="col") 입사일
               th(scope="col") skill
           tbody
             each d in developers
@@ -36,9 +35,8 @@ block content
                 td= d[2]
                 td= d[3]
                 td= d[4]
-                td= d[5]
-                td #{moment(d[6]).format('YYYY-MM-DD')}
-                td= d[7]
+                td #{moment.duration(moment(new Date()).diff(d[5])).asMonths().toFixed(2)}개월
+                td= d[6]
     .row.justify-content-start.mt-4
       .col(style="margin-bottom: 1em")
         button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입 설정

@@ -1,0 +1,25 @@
+extends layout
+
+//- 동료평가(+pm평가) 페이지(개발자)
+block content
+  h1.main 동료평가
+  form(action="/peer_evaluation", method='post')
+    .form-group
+      label(for="inputPnum") Project Number
+      input#inputpum.form-control(type="number" name="pnum" placeholder="Enter Project Number")
+    .form-group
+      label(for="inputEvaluated") Evaluated
+      input#inputevaluated.form-control(type="number" name="evaluated" placeholder="Evaluated")
+    .form-group
+      label(for="inputWorkScore") Work Score
+      input#inputworkscore.form-control(type="number" name="work_score" min="0" max="100" placeholder="0~100점")
+    .form-group
+      label(for="inputWorkContent") Work content
+      input#inputworkcontent.form-control(type="text" name="work_content" placeholder="ex) 프로젝트 이해도 높음 ..")
+    .form-group
+      label(for="inputCommunicationScore") Communication Score
+      input#inputcommunicationscore.form-control(type="number" name="communication_score" min="0" max="100" placeholder="0~100점")
+    .form-group
+      label(for="inputCommunicationContent") Communication content
+      input#inputcommunicationcontent.form-control(type="text" name="communication_content" placeholder="ex) 프로젝트 멤버들 간의 소통 및 관계")
+    button.btn.btn-primary(type="submit") 평가 등록  
