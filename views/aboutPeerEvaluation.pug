@@ -1,0 +1,19 @@
+extends layout
+
+//- 동료평가(+pm평가) 페이지(개발자)
+block content
+    h3.text-center.mt-3 평가 할 프로젝트 선택
+    form(action="/topeer_evaluation",method="post")
+        .row.align-items-center.mt-4
+          .col.text-center
+            h3 Projects
+            select(name="project", size="1")
+              -for(let i=0; i<projects.length; i++)
+                option(value=projects[i]) #{projects[i]}
+              
+        .row.justify-content-start.mt-4
+          .col.text-center(style="margin-bottom: 1em")
+            button.btn.btn-dark(type="submit") 평가
+
+            
+
