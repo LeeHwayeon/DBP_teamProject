@@ -20,7 +20,7 @@ block content
                     tr
                         td=value[0]
                         td=value[1]
-                        td=value[2]
+                        td #{moment.duration(moment(new Date()).diff(value[2])).asMonths().toFixed(2)}개월
                         td=value[3]
                         td=value[4]
                         td=moment(value[5]).format('YYYY-MM-DD')

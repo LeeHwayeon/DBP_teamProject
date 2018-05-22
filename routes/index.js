@@ -26,69 +26,9 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('index', { state });
   });
 
-  // 회원가입 페이지로 이동
-  router.get('/signup', (req, res, next) => {
-    res.render('signup', { state: 'beforeLogin' });
-  });
-
-  // 회원가입 처리
-  router.post('/signup',(req, res, next) => {
-    // if(!req.body.id){
-    //   alert("아이디를 입력하세요.");
-    //   return('back');
-    // }
-    // if(req.body.id===defined){
-    //   alert("이미 존재하는 아이디입니다.");
-    //   return('back');
-    // }
-    // if(!req.body.password){
-    //   alert("비밀번호를 입력하세요.");
-    //   return('back');      
-    // }
-    // if(!req.body.name){
-    //   alert("이름을 입력하세요.");
-    //   return('back');
-    // }
-    // if(!req.body.resident_registration){
-    //   alert("주민번호를 입력하세요.");
-    //   return('back');
-    // }
-    // if(!req.body.education){
-    //   alert("최종학력을 입력하세요.");
-    //   return('back');     
-    // }
-    // if(!req.body.joincompany){
-    //   alert("입사일을 입력하세요.");
-    //   return('back');     
-    // }
-    // if(req.body.password<6){
-    //   alert("비밀번호는 6자리 이상으로 만드세요.");
-    //   return('back');
-    // }
-    if(job==='developer'){
-      connection.execute('insert into developer (num,id,pwd,user_name,resident_registration_number,education,join_company_date) values (seq_developer.nextval, \'' + req.body.id + '\', \''+ req.body,password +'\',\'' +req.body.name+'\',\''+req.body.resident_registration+'\',\''+req.body.education+'\',\''+req.body.joincompany+'\')',(err, result) => {
-        if(err){
-          console.error(err.message);
-          return;
-        }
-        alert('회원가입이 됐습니다. 로그인 하세요.');
-        return res.render('index', {state:'beforeLogin'});
-      });
-    }else{
-      connection.execute('insert into management (num,id,pwd,user_name,resident_registration_number,education) values (seq_management.nextval, \'' + req.body.id + '\', \''+ req.body,password +'\',\'' +req.body.name+'\',\''+req.body.resident_registration+'\',\''+req.body.education+'\')',(err, result) =>{
-        if(err){
-          console.error(err.message);
-          return;
-        }
-        alert('회원가입이 됐습니다. 로그인 하세요.');
-        return res.render('index', {state:'beforeLogin'});        
-      });
-    }
-  });
-
   // 회원가입 가입번호 입력 페이지로 이동
-  router.get('/authentication',(req,res,next) =>{
-    res.render('authentication',{state:'beforeLogin'});
+  router.get('/authentication', (req,res,next) =>{
+    res.render('authentication', { state:'beforeLogin' });
   });
 
   // 회원가입 가입번호 입력 처리
@@ -114,6 +54,34 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         // 개발자
         return res.render('signup', { state: 'beforeLogin', job: 'developer' });
       }
+    });
+  });
+
+  // 회원가입 처리
+  router.post('/signUp', (req, res, next) => {
+    connection.execute('select count(id) from (select id from management union select id from developer) where id = \'' + req.body.id + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      if (result.rows[0][0] === 1) {
+        alert('중복된 id입니다.');
+        return res.render('authentication', { state: 'beforeLogin' });
+      }
+    });
+
+    var query = 'insert into ' + req.body.job + ' values (';
+    // 시퀀스 꼬여서 일단 임시로.
+    query += (req.body.job === 'developer') ? 'developer_seq' : 'seq_client';
+    query += '.nextval, \'' + req.body.id + '\', \'' + req.body.password + '\', \'' + req.body.name + '\', \'' + req.body.resident_registration_number + '\', \'' + req.body.education + '\'';
+    query += (req.body.job === 'developer') ? ', to_date(\'' + req.body.joincompanydate + '\', \'yyyy-MM-dd\'), null)' : ')';
+    connection.execute(query, (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert('회원가입이 완료되었습니다.');
+      res.render('index', { state: 'beforeLogin' });
     });
   });
   
@@ -237,7 +205,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       alert("선택된 프로젝트가 없습니다.");
       return res.redirect("back");
     }
-    connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, developers) => {
+    connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, developers) => {
       if (err) {
         console.error(err.message);
         return;
@@ -287,7 +255,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         console.error(err.message);
         return;
       }
-      connection.execute('select num, id, user_name, resident_registration_number, education, work_experience, join_company_date, skill from developer', (err, dev) => {
+      connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, dev) => {
         if (err) {
           console.error(err.message);
           return;
@@ -421,10 +389,11 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('evaluation', { state: 'management' });
   });
 
-  //직원 관리 페이지(경영진)
+  // 직원 관리 페이지(경영진)
+  // 현재 프로젝트에 참여중인 직원들에 대한 정보만 있는 듯.
   router.get('/aboutDeveloper', (req, res, next) => {
     var developers = {};
-    connection.execute('select developer.id, developer.user_name, developer.work_experience, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
+    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
     (err, result)=>{
       if(err){
         console.error(err.message);
@@ -432,7 +401,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       }
       return res.render('aboutDeveloper',{state:'management', developers: result.rows});      
     });
-  }); 
+  });
 
   //동료평가(프로젝트 조회) 페이지로 이동
   router.get('/aboutPeerEvaluation', (req, res, next) =>{
