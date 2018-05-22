@@ -1,16 +1,12 @@
 block developer
-  li.nav-item
-    a.nav-link(href="/signout") 로그아웃
-  li.nav-item
-    a.nav-link(href="/mypage") 마이페이지
-  li.nav-item
-    a.nav-link(href="#") 내 프로젝트 정보
-  li.nav-item
-    a.nav-link(href="#") 프로젝트 인원 투입
-  li.nav-item
-    a.nav-link(href="#") 개발자 투입#{'&'}방출
-  li.nav-item
-    a.nav-link(href="#") 고객평가
-  li.nav-item
-    a.nav-link(href="/peer_evaluation") 동료평가
-
+  ul.navbar-nav.mr-auto
+    li.nav-item
+      a.nav-link(href="#") 내 프로젝트 정보
+    li.nav-item
+      a.nav-link(href="#") 고객평가
+    li.nav-item
+      a.nav-link(href="/peer_evaluation") 동료평가
+  ul.navbar-nav.justify-content-end.d-none.d-lg-flex.ml-md-auto
+    li.nav-item.active
+      a.nav-link(href="/mypage") 마이페이지
+  a.btn.btn-white.btn-empty.ml-md-3(href="/signout") Sign out

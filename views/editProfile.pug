@@ -1,0 +1,48 @@
+extends layout
+
+//- 마이 페이지
+block content
+  form(action='/editProfile?_method=PUT', method="POST")
+    div(name="mypage")
+    section.fdb-block.fp-active(data-block-type="contents" data-id="1" draggable="true")
+      .container
+        .row.text-left.align-items-center
+          .col-10.col-sm-6.m-auto.m-lg-0.col-lg-4
+            img.img-fluid(alt="image" src="https://editor-latest.s3.amazonaws.com/design-blocks/block_images/img_square_1.svg")
+          .col-10.col-lg-8.pt-4.pt-lg-0
+            h1 #{user.USER_NAME}
+              .row.mt-3
+                .col-12.col-sm-6.pt-3.pt-sm-0
+                  h3
+                    strong ID
+                      input.form-control.text-h3.ml-3(type="text", name="id" value=user.ID)
+                .col-12.col-sm-6.pt-3.pt-sm-0
+                  h3
+                    strong Password
+                      input.form-control.text-h3.ml-3(type="password", name="pwd" placeholder="new password")
+                .col-12.col-sm-6.pt-3.pt-sm-0
+                  h3
+                    strong Resident Registration Number
+                      input.form-control.text-h3.ml-3(type="text", name="resident_registration_number" value=user.RESIDENT_REGISTRATION_NUMBER)
+                .col-12.col-sm-6.pt-3.pt-sm-0
+                  h3
+                    strong Education
+                      input.form-control.text-h3.ml-3(type="text", name="education" value=user.EDUCATION)
+                .col-12.col-sm-6.pt-3.pt-sm-0
+                  h3
+                    strong Job
+                      p.text-h3.ml-3
+                        | #{user.job}
+                if state === 'developer'
+                  .col-12.col-sm-6.pt-3.pt-sm-0
+                    h3
+                      strong Join Company Date
+                        input.form-control.text-h3.ml-3(type="date", name="join_date" value=`${moment(user.JOIN_COMPANY_DATE).format('YYYY-MM-DD')}`)
+                  .col-12.col-sm-12.pt-3.pt-sm-0
+                    h3
+                      strong Skill
+                        p.text-h3.ml-3
+                          | #{user.SKILL === null ? '' : user.SKILL}
+                .col-12.col-sm-12.pt-3.pt-sm-0
+                  button.btn.btn-black.btn-empty(type="submit", style="float: right") 수정완료
+                
