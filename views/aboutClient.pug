@@ -3,19 +3,24 @@ extends layout
 //- 고객 관리 페이지(경영진)
 block content
   div.mr-3.ml-3
-    h2.text-center.mt-3 고객 목록 확인 및 등록
-    form(action='/addClient', method='post')
-      .input-group.mb-3
-        input.form-control(type="text" name="newName" placeholder="Client's name")
-        .input-group-append
-          button.btn.btn-outline-secondary(type="submit") 추가
-    table.table.text-center
-      thead
-        tr
-          th(scope="col") no.
-          th(scope="col") name
-      tbody
-        each value in clients
-          tr
-            td= value[0]
-            td= value[1]
+    .form-group
+      h2.text-center.mt-3 고객 관리
+      div.mb-3
+        h4 고객 등록
+        form(action='/addClient', method='post')
+          .input-group.mb-3
+            input.form-control(type="text" name="newName" placeholder="Client's name")
+            .input-group-append
+              button.btn.btn-outline-secondary(type="submit") 추가
+      div.mt-3
+        h4 고객 목록
+        table.table.text-center
+          thead
+            tr
+              th(scope="col") no.
+              th(scope="col") name
+          tbody
+            each value in clients
+              tr
+                td= value[0]
+                td= value[1]

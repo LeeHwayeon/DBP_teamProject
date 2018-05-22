@@ -1,7 +1,7 @@
-const info = require('./aws_rds_info');
-
+const info = require('./aws_rds_info'); 
+ 
 module.exports = {
-  user          : info.user,
-  password      : info.password,
-  connectString : info.connectString
-};
+  user          : info.user, 
+  password      : info.password, 
+  connectString : info.connectString 
+}; 

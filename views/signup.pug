@@ -1,27 +1,31 @@
 extends layout
 
-//- 개발자 회원가입 페이지
+//- 회원가입 페이지
 block content
   h1.main Sign up
-  form(action="#", method='post')
+  form(action="/signUp", method='post')
     .form-group
       label(for="inputID") ID
-      input#inputId.form-control(type="id" name="id" placeholder="id")
+      input#inputId.form-control(type="id" name="id" placeholder="id" required)
     .form-group
       label(for="inputPassword") Password
-      input#inputPassword.form-control(type="password" name="password" placeholder="Password")
+      input#inputPassword.form-control(type="password" pattern=".{6,20}" name="password" placeholder="Password" required)
     .form-group
       label(for="inputName") Name
-      input#inputName.form-control(type="name" name="name" placeholder="Name")
+      input#inputName.form-control(type="name" name="name" placeholder="Name" required)
     .form-group
       label(for="inputResident_registration_number") Resident_registration_number
-      input#inputAddress.form-control(type="text" name="resident_registration_number" placeholder="111111-1111111")
+      input#inputAddress.form-control(type="text" name="resident_registration_number" placeholder="111111-1111111"  required)
     .form-group
       label(for="inputEducation") Education
-      input#inputEducation.form-control(type="text" name="education" placeholder="University graduation or Master's degree ..")
-    .form-group
-      label(for="inputJoincompanydate") Join Company Date
-      input#inputJoincompanydate.form-control(type="text" name="joincompanydate" placeholder="YY/MM/DD")
+      select.custom-select(name="education", size="1")
+        option(value='High school graduate') High school graduate
+        option(value='University graduation') University graduation
+        option(value='Master\'s degree') Master's degree
+    if job === 'developer'
+      .form-group
+        label(for="inputJoincompanydate") Join Company Date
+        input#inputJoincompanydate.form-control(type="date" name="joincompanydate" required)
     .form-group
       label(for="inputJob") Job
       input.form-control(type="text" name="job" value=`${job}` readonly)
