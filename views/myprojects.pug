@@ -1,0 +1,24 @@
+extends layout
+
+block content
+    p 마이프로젝트 페이지
+    h4 프로젝트 
+    table.table.text-center
+      thead
+        tr
+          th(scope="col") project_num
+          th(scope="col") developer_num
+          th(scope="col") role_in_project
+          th(scope="col") join_date 
+          th(scope="col") out_date
+          th(scope="col") skill
+      tbody
+        each value in result
+          tr
+            td= value[0]
+            td= value[1]
+            td= value[2]
+            td= moment(value[3]).format('YYYY-MM-DD')
+            td= moment(value[4]).format('YYYY-MM-DD')
+            td= value[5]
+            
