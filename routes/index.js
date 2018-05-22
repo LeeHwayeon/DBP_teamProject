@@ -191,24 +191,72 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-});
-
   //내프로젝트 정보
   router.get('/myprojects', (req, res, next) => {
-    oracledb.getConnection(dbConfig, (err, connection) => {
-      if (err) {
-        console.error(err.message);
-        return;
-    }
-    connection.execute('select * from project_input where developer_id =\''+ req.body.id +'\'', (err, result) => {
+    connection.execute('select project_input.* from project_input, DEVELOPER where developer.id= \'' + req.session.user.ID + '\' and project_input.DEVELOPER_NUM = DEVELOPER.NUM', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
     }
       console.log(result.rows);
-      res.render('myprojects', { state: 'beforeLogin', result: result.rows });
+      return res.render('myprojects', { state: 'developer', result: result.rows });
     });
   });
+
+  //고객평가 페이지로 이동
+  router.get('/customer_evaluation', (req, res, next) => {
+    res.render('customer_evaluation', { state: 'developer' });
+  });
+
+  //고객평가
+  router.post('/customer_evaluation', (req, res, next) => {
+    connection.execute('insert into customer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=> {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      alert("고객평가 등록 완료.");
+      return res.render('customer_evaluation', { state: 'developer'});
+    });
+  });
+
+  //프로젝트관리
+  router.get('/aboutProject', (req, res, next) => {
+    connection.execute('select * from project where BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      return res.render('aboutProject', { state: 'management', result: result.rows});
+    });
+  });
+
+  //프로젝트관리_검색창
+  router.post('/showProject', (req, res, next) => {
+    connection.execute('select * from project where num = \'' + req.body.projectNum + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutProject', { state: 'management', result: result.rows});
+    });
+  });
+
+  //프로젝트 투입,방출
+  router.get('/inAndOut', (req, res, next) => {
+    connection.execute('', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+    }
+      console.log(result.rows);
+      return res.render('inAndOut', { state: 'management', result: result.rows});
+    });
+  });
+
 });
+
+
 
 module.exports = router;

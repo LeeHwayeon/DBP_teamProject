@@ -1,0 +1,28 @@
+extends layout
+
+//- 프로젝트 관리 페이지
+//- 검색 전 보여지는 값은 현재 날짜에 진행중인 프로젝트
+block content
+    p 프로젝트 관리 페이지
+    form(action='/showProject', method='post')
+      .input-group.mb-3
+        input.form-control(type="text" name="projectNum" placeholder="input project number!")
+        .input-group-append
+          button.btn.btn-outline-secondary(type="submit") 검색
+    h4 프로젝트 
+    table.table.text-center
+      thead
+        tr
+          th(scope="col") num
+          th(scope="col") project_name
+          th(scope="col") begin_date
+          th(scope="col") end_date
+          th(scope="col") order_customer
+      tbody
+        each value in result
+          tr
+            td= value[0]
+            td= value[1]
+            td= moment(value[2]).format('YYYY-MM-DD')
+            td= moment(value[3]).format('YYYY-MM-DD')
+            td= value[4]
