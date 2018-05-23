@@ -392,14 +392,24 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // 직원 관리 페이지(경영진)
   // 현재 프로젝트에 참여중인 직원들에 대한 정보만 있는 듯.
   router.get('/aboutDeveloper', (req, res, next) => {
-    var developers = {};
     connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
     (err, result)=>{
       if(err){
         console.error(err.message);
         return;
       }
-      return res.render('aboutDeveloper',{state:'management', developers: result.rows});      
+      return res.render('aboutDeveloper',{state:'management', result: result.rows});      
+    });
+  });
+
+  //직원관리_검색창
+  router.post('/showDeveloper', (req, res, next) => {
+    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num and developer.id = \'' + req.body.DeveloperId + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutDeveloper', { state: 'management', result: result.rows});
     });
   });
 
