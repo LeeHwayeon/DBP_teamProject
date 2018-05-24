@@ -443,7 +443,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     //로그인 한 사용자가 속해있는 프로젝트 목록을 가져온다.
     connection.execute('select project.project_name from project,project_input,developer where developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num', (err,result) => {
       if(err){
-        console.log(err.message);
+        console.error(err.message);
         return;
       }
       if(result.rows.length === 0){
@@ -589,14 +589,15 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   //프로젝트 투입,방출
   router.get('/inAndOut', (req, res, next) => {
-    connection.execute('', (err, result) => {
-      if (err) {
-        console.error(err.message);
-        return;
-    }
-      console.log(result.rows);
-      return res.render('inAndOut', { state: 'management', result: result.rows});
-    });
+    // connection.execute('', (err, result) => {
+    //   if (err) {
+    //     console.error(err.message);
+    //     return;
+    // }
+    //   console.log(result.rows);
+    //   return res.render('inAndOut', { state: 'management', result: result.rows});
+    // });
+    return res.render('inAndOut', { state: 'management' });
   });
 
 });
