@@ -410,7 +410,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     //로그인 한 사용자가 속해있는 프로젝트 목록을 가져온다.
     connection.execute('select project.project_name from project,project_input,developer where developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num', (err,result) => {
       if(err){
-        console.log(err.message);
+        console.error(err.message);
         return;
       }
       if(result.rows.length === 0){
@@ -432,13 +432,13 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           //평가한 내용이 없다면
           if(result.rows.length === 0){
             if(err){
-              console.log(err.message);
+              console.error(err.message);
               return;
             }
             //평가내용을 pm평가 테이블에 insert
             connection.execute('insert into pm_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
               if(err){
-                console.log(err.message);
+                console.error(err.message);
                 return;
               }
               alert('PM평가가 완료되었습니다.');
@@ -535,14 +535,15 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   //프로젝트 투입,방출
   router.get('/inAndOut', (req, res, next) => {
-    connection.execute('', (err, result) => {
-      if (err) {
-        console.error(err.message);
-        return;
-    }
-      console.log(result.rows);
-      return res.render('inAndOut', { state: 'management', result: result.rows});
-    });
+    // connection.execute('', (err, result) => {
+    //   if (err) {
+    //     console.error(err.message);
+    //     return;
+    // }
+    //   console.log(result.rows);
+    //   return res.render('inAndOut', { state: 'management', result: result.rows});
+    // });
+    return res.render('inAndOut', { state: 'management' });
   });
 
 });
