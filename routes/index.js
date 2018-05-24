@@ -615,23 +615,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.render('customerEvaluationDetail', {state: 'management', result:result.rows});  
     });
   });
-
-
-
-  // //평가 상세페이지
-  // router.get('/peerEvaluationDetail',(req, res, next) =>{
-  //   var projects={};
-  //   connection.execute('select * from peer_evaluation', (err,result) =>{
-  //     if(err){
-  //       console.log(err.message);
-  //       return;
-  //     }
-  //     console.log(result);
-  //     return res.render('peerEvaluationDetail', {state: 'management', projects:result.rows});  
-  //   });
-  // });
-
-
 });
 
 
