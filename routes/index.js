@@ -427,6 +427,10 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           console.error(err.message);
           return;
         }
+        if(result.rows.length === 0){
+          alert('관련 프로젝트 정보가 없습니다.');
+          return res.redirect("/aboutDeveloper");
+        }
         return res.render('aboutDeveloperDetail', {state:'management', selected, result:result.rows});        
       });
     });
