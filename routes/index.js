@@ -389,27 +389,46 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     res.render('evaluation', { state: 'management' });
   });
 
-  // 직원 관리 페이지(경영진)
-  // 현재 프로젝트에 참여중인 직원들에 대한 정보만 있는 듯.
-  router.get('/aboutDeveloper', (req, res, next) => {
-    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
-    (err, result)=>{
-      if(err){
-        console.error(err.message);
-        return;
-      }
-      return res.render('aboutDeveloper',{state:'management', result: result.rows});      
-    });
-  });
-
   //직원관리_검색창
   router.post('/showDeveloper', (req, res, next) => {
-    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num and developer.id = \'' + req.body.DeveloperId + '\'', (err, result) => {
+    connection.execute('select id,user_name,join_company_date from developer where id = \'' + req.body.DeveloperId + '\'', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
       return res.render('aboutDeveloper', { state: 'management', result: result.rows});
+    });
+  });
+
+  // 직원 관리 페이지(경영진)_직원아이디, 이름, 입사일만 첫 페이지에 표시
+  router.get('/aboutDeveloper', (req, res, next) => {
+    connection.execute('select id,user_name,join_company_date from developer', (err, result) => {
+      if(err){
+        console.error(err.message);
+        return;
+      }
+      return res.render('aboutDeveloper', {state:'management', result:result.rows});
+    });
+  });
+
+  //직원관리_상세 페이지
+  router.post('/aboutDeveloperDetail', (req, res, next) => {
+    //선택된 개발자의 이름과 아이디를 알려줌
+    connection.execute('select id,user_name from developer where id=\''+req.body.developer+'\'', (err, selectedD) => {
+      if(err){
+        console.err(err.message);
+        return;
+      }
+      var selected = '개발자 이름 : ' +selectedD.rows[0][1];
+      
+      //선택된 개발자가 했던 혹은 하고있던 프로젝트 관련 정보 알려줌
+      connection.execute('select project.project_name, project_input.role_in_project,project_input.join_date,project_input.out_date,project_input.skill from project, project_input, developer where project.num=project_input.project_num and project_input.developer_num=developer.num and developer.id=\''+req.body.developer+'\'', (err, result) => {
+        if(err){
+          console.error(err.message);
+          return;
+        }
+        return res.render('aboutDeveloperDetail', {state:'management', selected, result:result.rows});        
+      });
     });
   });
 
@@ -434,60 +453,81 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   //동료평가 페이지(개발자)
   router.post('/topeer_evaluation',(req, res, next) => {
     //선택된 프로젝트에서의 사용자 직무 검색 (선택된 프로젝트를 해줘야 한다.... 선택된...!!!!!!!!!!!!!!!!!)
-    connection.execute('select project_input.role_in_project from project_input, developer where developer.id=\''+ req.session.user.ID +'\'  and developer.num=project_input.developer_num', (err, result) =>{
-      console.log(result);
-      //직무가 pm이면
-      if(result.rows==='PM'){
-        connection.execute('select * from pm_evaluation, project where project.num=pm_evaluation.project_num', (err, result) => {
-          //평가한 내용이 없다면
-          if(result.rows.length === 0){
-            if(err){
-              console.log(err.message);
-              return;
-            }
-            //평가내용을 pm평가 테이블에 insert
-            connection.execute('insert into pm_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
-              if(err){
-                console.log(err.message);
-                return;
+    connection.execute('select project.project_name from project where project.project_name = \'' + req.body.project + '\'', (err, selectedPrj) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      console.log(selectedPrj);
+      var selected = '프로젝트명 : ' + selectedPrj.rows[0];
+
+      //선택된 프로젝트가 존재하지 않으면
+      if(selectedPrj.rows.length === 0){
+        if(err){
+          console.error(err.message);
+          return;
+        }
+        alert('평가할 프로젝트가 선택되지 않았습니다.');
+        return res.redirect('back');
+      }
+      //선택된 프로젝트가 있다면 평가 진행
+      else{
+        connection.execute('select project_input.role_in_project from project_input, developer, project where developer.id=\''+ req.session.user.ID +'\'  and developer.num=project_input.developer_num and project.num=project_input.project_num and project.project_name = \''+req.body.project + '\'', (err, result) =>{
+          console.log(result);
+          //직무가 pm이면
+          if(result.rows==='PM'){
+            connection.execute('select * from pm_evaluation, project where project.num=pm_evaluation.project_num', (err, result) => {
+              //평가한 내용이 없다면
+              if(result.rows.length === 0){
+                if(err){
+                  console.log(err.message);
+                  return;
+                }
+                //평가내용을 pm평가 테이블에 insert
+                connection.execute('insert into pm_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
+                  if(err){
+                    console.log(err.message);
+                    return;
+                  }
+                  alert('PM평가가 완료되었습니다.');
+                  return res.render('index', { state : 'developer' });
+                });
               }
-              alert('PM평가가 완료되었습니다.');
-              return res.render('index', { state : 'developer' });
+              //평가한 내용이 이미 있다면
+              else{
+                alert('이미 평가가 완료되었습니다.');
+                return res.redirect('back');
+              }
             });
           }
-          //평가한 내용이 이미 있다면
+          //직무가 pm아닌 개발자들이라면
           else{
-            alert('이미 평가가 완료되었습니다.');
-            return res.redirect('back');
-          }
+            connection.execute('select * from peer_evaluation, project where project.num=peer_evaluation.project_num', (err, result) =>{
+              //평가한 내용이 없다면
+              if(result.rows.length === 0){
+                if(err){
+                  console.log(err.message);
+                  return;
+                }
+                //평가 내용을 동료평가 테이블에 insert
+                connection.execute('insert into peer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
+                  if(err){
+                    console.error(err.message);
+                    return;
+                  }
+                  alert('동료평가가 완료되었습니다.');
+                  return res.render('index', { state : 'developer' });              
+                });
+              }
+              //평가한 내용이 이미 있다면
+              else{
+                alert('이미 평가가 완료되었습니다.');
+                return res.redirect('back');
+              }
+            });
+          } 
         });
       }
-      //직무가 pm아닌 개발자들이라면
-      else{
-        connection.execute('select * from peer_evaluation, project where project.num=peer_evaluation.project_num', (err, result) =>{
-          //평가한 내용이 없다면
-          if(result.rows.length === 0){
-            if(err){
-              console.log(err.message);
-              return;
-            }
-            //평가 내용을 동료평가 테이블에 insert
-            connection.execute('insert into peer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=>{
-              if(err){
-                console.error(err.message);
-                return;
-              }
-              alert('동료평가가 완료되었습니다.');
-              return res.render('index', { state : 'developer' });              
-            });
-          }
-          //평가한 내용이 이미 있다면
-          else{
-            alert('이미 평가가 완료되었습니다.');
-            return res.redirect('back');
-          }
-        });
-      } 
     });
   });
 
