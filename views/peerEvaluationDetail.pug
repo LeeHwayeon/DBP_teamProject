@@ -1,0 +1,26 @@
+extends layout
+
+//- 동료평가 세부정보
+block content
+    form(action="/peerEvaluationDetail", method="post")
+    h4.h4.text-center 평가 상세 내용
+    br
+    table.table.text-center
+      thead
+        tr
+          th(scope="col") Project Number
+          th(scope="col") Evaluator
+          th(scope="col") Evaluated
+          th(scope="col") Work Score
+          th(scope="col") Work Content
+          th(scope="col") Communication Score
+          th(scope="col") Communication Content
+      tbody
+        tr
+            td #{result[0][0]}
+            td #{result[0][1]}
+            td #{result[0][2]}
+            td #{result[0][3]}
+            td #{result[0][4]}
+            td #{result[0][5]}
+            td #{result[0][6]}

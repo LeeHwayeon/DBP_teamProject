@@ -384,24 +384,44 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  // 평가조회 페이지
-  router.get('/evaluation', (req, res, next) => {
-    res.render('evaluation', { state: 'management' });
-  });
-
-  // 직원 관리 페이지(경영진)
-  // 현재 프로젝트에 참여중인 직원들에 대한 정보만 있는 듯.
+  // 직원 관리 페이지(경영진)_직원아이디, 이름, 입사일만 첫 페이지에 표시
   router.get('/aboutDeveloper', (req, res, next) => {
-    var developers = {};
-    connection.execute('select developer.id, developer.user_name, developer.join_company_date, project.project_name, project_input.role_in_project, project_input.join_date,project_input.out_date, project_input.skill from developer, project_input, project where developer.num=project_input.developer_num and project.num=project_input.project_num',
-    (err, result)=>{
+    connection.execute('select id,user_name,join_company_date from developer', (err, result) => {
       if(err){
         console.error(err.message);
         return;
       }
-      return res.render('aboutDeveloper',{state:'management', developers: result.rows});      
+      console.log(result);
+      return res.render('aboutDeveloper', {state:'management', result:result.rows});
     });
   });
+
+  //직원관리_상세 페이지
+  router.post('/aboutDeveloperDetail', (req, res, next) => {
+    //선택된 개발자의 이름과 아이디를 알려줌
+    connection.execute('select id,user_name from developer where id=\''+req.body.developer+'\'', (err, selectedD) => {
+      if(err){
+        console.err(err.message);
+        return;
+      }
+      var selected = '개발자 이름 : ' +selectedD.rows[0][1];
+      
+      //선택된 개발자가 했던 혹은 하고있던 프로젝트 관련 정보 알려줌
+      connection.execute('select project.project_name, project_input.role_in_project,project_input.join_date,project_input.out_date,project_input.skill from project, project_input, developer where project.num=project_input.project_num and project_input.developer_num=developer.num and developer.id=\''+req.body.developer+'\'', (err, result) => {
+        if(err){
+          console.error(err.message);
+          return;
+        }
+        //관련된 프로젝트 정보 없으면 alert창 뜨게!
+        else{
+          alert('관련된 프로젝트 정보가 없습니다!');
+          return res.redirect('back');
+        }
+        return res.render('aboutDeveloperDetail', {state:'management', selected, result:result.rows});        
+      });
+    });
+  });
+  
 
   //동료평가(프로젝트 조회) 페이지로 이동
   router.get('/aboutPeerEvaluation', (req, res, next) =>{
@@ -545,7 +565,76 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  //평가목록
+  router.get('/evaluation',(req, res, next) =>{
+    //동료평가목록
+    var projects={};
+    connection.execute('SELECT DISTINCT project_num, project_name FROM project, PEER_EVALUATION WHERE project.NUM (+) = PEER_EVALUATION.PROJECT_NUM',(err,projects) =>{
+      console.log(projects)
+      if(err){
+        console.log(err.message);
+        return;
+      }  
+    
+      //고객평가목록
+      var customers={};
+      connection.execute('select project_num, project.project_name from project, customer_evaluation where project.num = customer_evaluation.project_num', (err,customers) =>{
+        if(err){
+          console.log(err.message);
+          return;
+        }
+        return res.render('evaluation', {state: 'management', projects:projects.rows, customers:customers.rows});
+      });
+    });
+  });
+
+  // 동료평가 상세페이지
+  router.get('/peerEvaluationDetail/:id',(req, res, next) =>{
+    id = req.params.id
+    console.log(id)
+    connection.execute('select * from peer_evaluation where peer_evaluation.project_num = \'' + id + '\'', (err,result) => {
+      if(err){
+        console.log(err.message);
+        return;
+      }
+      console.log(result);
+      return res.render('peerEvaluationDetail', {state: 'management', result:result.rows});  
+    });
+  });
+
+  //고객평가 상세페이지
+  router.get('/customerEvaluationDetail/:id',(req, res, next) =>{
+    id = req.params.id
+    console.log(id)
+    connection.execute('select * from customer_evaluation where customer_evaluation.project_num = \'' + id + '\'', (err,result) => {
+      if(err){
+        console.log(err.message);
+        return;
+      }
+      console.log(result);
+      return res.render('customerEvaluationDetail', {state: 'management', result:result.rows});  
+    });
+  });
+
+
+
+  // //평가 상세페이지
+  // router.get('/peerEvaluationDetail',(req, res, next) =>{
+  //   var projects={};
+  //   connection.execute('select * from peer_evaluation', (err,result) =>{
+  //     if(err){
+  //       console.log(err.message);
+  //       return;
+  //     }
+  //     console.log(result);
+  //     return res.render('peerEvaluationDetail', {state: 'management', projects:result.rows});  
+  //   });
+  // });
+
+
 });
+
+
 
 
 
