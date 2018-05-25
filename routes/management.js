@@ -113,17 +113,25 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       }
       var selected = '이름 : ' + selectedD.rows[0][1] + ', 주민번호 : ' + selectedD.rows[0][2] + ', 최종학력 : ' + selectedD.rows[0][3] + ', 입사일 : ' + moment(selectedD.rows[0][4]).format('YYYY-MM-DD') + ', skill : '+ selectedD.rows[0][5];
       
-      // 선택된 개발자가 했던 혹은 하고있던 프로젝트 관련 정보 알려줌
-      connection.execute('select project.project_name, project_input.role_in_project,project_input.join_date,project_input.out_date,project_input.skill from project, project_input, developer where project.num=project_input.project_num and project_input.developer_num=developer.num and developer.id=\'' + req.params.id + '\'', (err, result) => {
+      var query = 'select p.project_name, c.client_name, p.begin_date, p.end_date, pi.role_in_project, pi.join_date, pi.out_date, pi.skill from project p, project_input pi, developer d, client c where p.num = pi.project_num and pi.developer_num = d.num and c.num = p.order_customer and d.id= \'' + req.params.id + '\' and ';
+      var date_condition1 = 'BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)';
+      var date_condition2 = 'END_DATE < trunc(sysdate)';
+      connection.execute(query + date_condition1, (err, prj_cur) => {
         if (err) {
           console.error(err.message);
           return;
         }
-        if (result.rows.length === 0) {
-          alert('관련 프로젝트 정보가 없습니다.');
-          return res.redirect('back');
-        }
-        res.render('management/aboutDeveloperDetail', { state: 'management', selected, result: result.rows });
+        connection.execute(query + date_condition2, (err, prj_before) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          if (prj_cur.rows.length === 0 && prj_before.rows.length === 0) {
+            alert('관련 프로젝트 정보가 없습니다.');
+            return res.redirect('back');
+          }
+          res.render('management/aboutDeveloperDetail', { state: 'management', selected, prj_cur: prj_cur.rows, prj_before: prj_before.rows });
+        });
       });
     });
   });
@@ -146,15 +154,35 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  // 고객 등록 페이지로 이동
+  router.get('/addClient', (req, res, next) => {
+    res.render('management/addClient', { state: 'management' });
+  });
+
   // 고객 등록
   router.post('/addClient', (req, res, next) => {
-    connection.execute('insert into client(num, client_name) values(seq_client.nextval, \'' + req.body.newName + '\')', (err, result) => {
+    connection.execute('insert into client(num, client_name, contact) values(seq_client.nextval, \'' + req.body.name + '\', \'' + req.body.contact + '\')', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
       alert("고객이 등록되었습니다.");
       res.render('index', { state: 'management' });
+    });
+  });
+
+  // 고객 상세 페이지로 이동
+  router.get('/client/:id', (req, res, next) => {
+    connection.execute('select project_name, begin_date, end_date from client c, project p where p.order_customer = c.num and c.num = \'' + req.params.id + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      if (result.rows.length === 0) {
+        alert("의뢰한 프로젝트가 없습니다.");
+        return res.redirect('back');
+      }
+      res.render('management/detailClient', { state: 'management', result: result.rows });
     });
   });
 
