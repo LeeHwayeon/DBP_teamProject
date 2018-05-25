@@ -173,27 +173,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       res.render('index', { state: req.session.user.job });
     });
   });
-
-  
-
-  
-
-  
-
-  
-
-  
-  
-  
-
-  
-
-  
-
-  
-
-  
-
 });
 
 module.exports = router;

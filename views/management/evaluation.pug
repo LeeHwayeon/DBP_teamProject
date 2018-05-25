@@ -2,5 +2,25 @@ extends ../layout
 
 //- 평가조회
 block content
-    form(action="/evaluation", method="get")
-    p 평가조회입니다.
+    .container
+        h3 평가조회
+        br
+        p.peer-evaluation
+            | 동료 / PM 평가
+        p.project-name 프로젝트 이름
+        hr
+        .col.text-center
+            -for(let i = 0; i < projects.length; i++) {
+                a(href=`/management/peerEvaluationDetail/${projects[i][0]}`)
+                    p #{projects[i][1]}
+            -}
+      
+        p.customer-evaluation
+            | 고객 평가
+        p.project-name 프로젝트 이름
+        hr
+        .col.text-center
+            -for(let i = 0; i < customers.length; i++) {
+                a(href=`/management/customerEvaluationDetail/${customers[i][0]}`)
+                    p #{customers[i][1]}
+            -}
