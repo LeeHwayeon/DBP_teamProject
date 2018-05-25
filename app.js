@@ -8,6 +8,8 @@ var session = require('express-session');
 var methodOverride = require('method-override');
 
 var index = require('./routes/index');
+var management = require('./routes/management');
+var developer = require('./routes/developer');
 
 var app = express();
 
@@ -42,6 +44,8 @@ app.use(function(req, res, next) {
 
 // Route
 app.use('/', index);
+app.use('/management', management);
+app.use('/developer', developer);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,12 +1,15 @@
 block developer
   ul.navbar-nav.mr-auto
     li.nav-item
-      a.nav-link(href="/myprojects") 내 프로젝트 정보
-    li.nav-item
-      a.nav-link(href="/customer_evaluation") 고객평가
-    li.nav-item
-      a.nav-link(href="/aboutPeerEvaluation") 동료평가
-  ul.navbar-nav.justify-content-end.d-none.d-lg-flex.ml-md-auto
+      a.nav-link(href="/developer/myprojects")
+        | Project
+    li.nav-item.dropdown
+      a#navbarDropdown.nav-link.dropdown-toggle(href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        | Evaluation
+      .dropdown-menu(aria-labelledby="navbarDropdown")
+        a.dropdown-item(href="/developer/customer_evaluation") 고객평가
+        a.dropdown-item(href="/developer/aboutPeerEvaluation") 동료평가
+  ul.navbar-nav
     li.nav-item.active
-      a.nav-link(href="/mypage") 마이페이지
-  a.btn.btn-white.btn-empty.ml-md-3(href="/signout") Sign out
+      a.nav-link(href="/mypage") My page
+  a.btn.btn.btn-outline-light.ml-md-3(href="/signout") Sign out

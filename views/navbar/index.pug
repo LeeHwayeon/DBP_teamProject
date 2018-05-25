@@ -1,19 +1,14 @@
-header.bg-dark.fp-active(data-block-type="headers" data-id="6")
-  .container(style="margin: 0; max-width: 100%")
-    nav.navbar.navbar-expand-md
-      a.navbar-brand.font-weight-bold(href="/") Prompt
-      button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarNav9" aria-controls="navbarNav9" aria-expanded="false" aria-label="Toggle navigation")
-        span.navbar-toggler-icon
-      #navbarNav9.collapse.navbar-collapse
-        if state == 'beforeLogin'
-          block beforeLogin
-            include ./beforeLogin
-        else if state == 'management'
-          block management
-            include ./nav_management
-        else if state == 'developer'
-          block developer
-            include ./nav_developer
-script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js")
-script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js")
-script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js")
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+  a.navbar-brand.font-weight-bold(href="/") Prompt
+  button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation")
+    span.navbar-toggler-icon
+  #navbarSupportedContent.collapse.navbar-collapse
+    if state == 'management'
+      block management
+        include ./nav_management
+    else if state == 'developer'
+      block developer
+        include ./nav_developer
+    else
+      block beforeLogin
+        include ./beforeLogin
