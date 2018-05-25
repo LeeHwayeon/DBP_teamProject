@@ -1,20 +1,33 @@
 block management
   ul.navbar-nav.mr-auto
     li.nav-item
-      a.nav-link(href="/management/aboutDeveloper") Employee
-    li.nav-item
-      a.nav-link(href="/management/aboutClient") Client
-    li.nav-item
-      a.nav-link(href="/management/aboutProject") Project
-    li.nav-item
-      a.nav-link(href="/management/showPrjNoPM") PM 등록
-    li.nav-item
-      a.nav-link(href="/management/prjInput") 프로젝트 인원투입
-    li.nav-item
-      a.nav-link(href="/management/inAndOut") 개발자 투입#{'&'}방출
-    li.nav-item
-      a.nav-link(href="/management/evaluation") Evaluation
-  ul.navbar-nav.justify-content-end.d-none.d-lg-flex.ml-md-auto
+      a.nav-link(href="/management/aboutDeveloper")
+        | Developer
+    li.nav-item.dropdown
+      a#navbarDropdown.nav-link.dropdown-toggle(href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        | Client
+      .dropdown-menu(aria-labelledby="navbarDropdown")
+        a.dropdown-item(href="/management/aboutClient") 조회
+        a.dropdown-item(href="/management/addClient") 추가
+    li.nav-item.dropdown
+      a#navbarDropdown.nav-link.dropdown-toggle(href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        | Project
+      .dropdown-menu(aria-labelledby="navbarDropdown")
+        a.dropdown-item(href="/management/aboutProject") 조회
+        a.dropdown-item(href="/management/addProject") 추가
+        .dropdown-divider
+        //- 투입 방출 어지러운거 나중에 다 합칠예정
+        a.dropdown-item(href="/management/prjInput") 인원 투입 및 방출
+        a.dropdown-item(href="/management/showPrjNoPM") PM등록
+        a.dropdown-item(href="/management/inAndOut") 개발자 투입#{'&'}방출
+    li.nav-item.dropdown
+      a#navbarDropdown.nav-link.dropdown-toggle(href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        | Evaluation
+      .dropdown-menu(aria-labelledby="navbarDropdown")
+        a.dropdown-item(href="/management/evaluation") PM평가
+        a.dropdown-item(href="#") 동료평가
+        a.dropdown-item(href="#") 고객평가
+  ul.navbar-nav
     li.nav-item.active
       a.nav-link(href="/mypage") My page
-  a.btn.btn-white.btn-empty.ml-md-3(href="/signout") Sign out
+  a.btn.btn.btn-outline-light.ml-md-3(href="/signout") Sign out
