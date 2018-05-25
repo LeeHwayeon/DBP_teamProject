@@ -1,17 +1,20 @@
-extends layout
+extends ../layout
 
-//- 프로젝트 인원 투입 페이지 : 프로젝트 선택, 개발자 선택
+//- PM 등록 페이지 : PM이 될 개발자 선택
 block content
-  form(action="/configureInput", method="post")
+  form(action="/management/addPMtable", method="post")
     .row.mt-3
       .col.text-center
-        h2 프로젝트 인원 투입
+        h2 PM 등록
     .row.align-items-center.mt-4
-      .col.ml-3
-        h3.mb-3 프로젝트 선택
-        select.custom-select(name="project", size="1")
-          each project in projects
-            option(value=project[0]) #{project[1]} by #{project[2]}
+      .col
+        h3.mb-3.ml-3 선택된 프로젝트
+        input.form-control(type="text" name="project" value=`${selected}` readonly)
+        input(type="hidden" name="project_num" value=`${project_num}`)
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 투입일 선택
+        input.form-control(type="date" name="join_date")
     .row.align-items-center.mt-4
       .col
         h3.mb-3.ml-3 개발자 선택
@@ -26,11 +29,10 @@ block content
               th(scope="col") 경력
               th(scope="col") skill
           tbody
-            each d in developers
+            each d in developer
               tr
                 td
-                  .form-check
-                    input#defaultCheck1.form-check-input(type="checkbox" name="developer" value=`${d[0]}`)
+                  input(type="radio" name="developer" value=`${d[0]}`)
                 th(scope="row")= d[1]
                 td= d[2]
                 td= d[3]
@@ -39,5 +41,5 @@ block content
                 td= d[6]
     .row.justify-content-start.mt-4
       .col(style="margin-bottom: 1em")
-        button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입 설정
-        
+        button.btn.btn-dark.mr-3(type="submit", style="float: right") Appoint PM
+    
