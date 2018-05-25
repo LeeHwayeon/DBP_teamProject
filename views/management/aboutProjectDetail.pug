@@ -1,0 +1,47 @@
+extends ../layout
+
+//- 프로젝트 상세페이지
+block content
+  div.mr-3.ml-3
+    h1.text-center.mt-5= result[0][0]
+    .row.mt-4
+      .col-sm-4
+      .col-sm-4
+        ul.list-group
+          li.list-group-item #{'프로젝트 시작일 : ' + moment(result[0][1]).format('YYYY-MM-DD')}
+          li.list-group-item #{'프로젝트 종료일 : ' + moment(result[0][2]).format('YYYY-MM-DD')}
+          li.list-group-item
+            a(href=`/management/client/${result[0][3]}`) #{'발주처 : ' + result[0][4]}
+          if pm.length !== 0
+            li.list-group-item
+              a(href=`/management/detail/${pm[0][0]}`) #{'PM : ' + pm[0][1]}
+              //- TODO: PM처리(appoinPM으로 바로 넘기자)
+              button.btn.btn-outline-dark(type="button" onclick="location.href='addProject'", style="float: right") PM 변경
+          else
+            li.list-group-item PM이 아직 없습니다.
+              button.btn.btn-outline-dark(type="button" onclick="location.href='addProject'", style="float: right") PM 등록
+
+
+      .col-sm-4
+    h2.ml-3.mt-5 Employee input to the project
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
+            tr 
+              th(scope="col") 이름
+              th(scope="col") 역할
+              th(scope="col") 투입일
+              th(scope="col") 방출일
+              th(scope="col") skill
+          tbody
+            each value in pi
+              tr
+                td
+                  a(href=`/management/detail/${value[0]}`)= value[1]
+                td=value[2]
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=moment(value[4]).format('YYYY-MM-DD')
+                td=value[5]
+              //- TODO: 평가 관련 정보  
+      

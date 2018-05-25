@@ -2,28 +2,28 @@ extends ../layout
 
 //- 직원 관리 페이지(경영진)
 block content
+  h1.text-center.mt-5 Employee
   //- 직원 검색
-  h2.text-center.mt-3 직원 검색
-  form(action='/management/showDeveloper', method='post')
-    select.custom-select(name="selected_search_key", size="1")
-      option(value='id') ID
-      option(value='name') 이름
-    .input-group.mb-3
-      input.form-control(type="text" name="search_key")
-      .input-group-append
-        button.btn.btn-outline-secondary(type="submit") 검색
+  div.float-right
+    nav.navbar.navbar-light.mt-4.mb-3
+      form.form-inline(action='/management/showDeveloper', method='post')
+        .col-md-auto.align-items-right(style="padding: 0")
+          select.custom-select(name="selected_search_key", size="1")
+            option(value='id') ID
+            option(value='name') 이름
+        input.form-control.mr-sm-2(type="text" name="search_key" placeholder="Search" aria-label="Search")
+        button.btn.btn-outline-secondary.my-2.my-sm-0(type="submit") 검색
   //- 검색 전 모든 직원 정보 보여줌, 검색 후 검색된 직원 정보만 보여줌
-  h4 직원 정보
-  form(action='/management/showDeveloper?_method=DELETE', method='POST')
-    button.btn.btn-outline-primary(type="submit") 선택삭제
-    table.table.text-center(width="700" border="1")
-      thead
-        tr
-          th(scope="col")
-          th(scope="col") ID
-          th(scope="col") 이름
-          th(scope="col") 경력
-      tbody
+  div
+    form(action='/management/showDeveloper?_method=DELETE', method='POST')
+      table.table.pull-center.table-hover(style="width: 90%; margin: auto")
+        thead.thead-light
+          tr
+            th(scope="col")
+            th(scope="col") ID
+            th(scope="col") 이름
+            th(scope="col") 경력
+        tbody
           each d in result
             tr
               td
@@ -33,4 +33,5 @@ block content
                 a(href=`/management/detail/${d[0]}`)= d[0]
               td= d[1]
               td #{moment.duration(moment(new Date()).diff(d[2])).asMonths().toFixed(1)}개월
-              
+      button.btn.btn-outline-primary.mr-3.mb-2(type="submit", style="float: right !important") 선택삭제
+  
