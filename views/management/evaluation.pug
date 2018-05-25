@@ -1,9 +1,8 @@
-extends layout
+extends ../layout
 
 //- 평가조회
 block content
     .container
-        form(action="/evaluation", method="post")
         h3 평가조회
         br
         p.peer-evaluation
@@ -12,7 +11,7 @@ block content
         hr
         .col.text-center
             -for(let i = 0; i < projects.length; i++) {
-                a(href=`/peerEvaluationDetail/${projects[i][0]}`)
+                a(href=`/management/peerEvaluationDetail/${projects[i][0]}`)
                     p #{projects[i][1]}
             -}
       
@@ -22,6 +21,6 @@ block content
         hr
         .col.text-center
             -for(let i = 0; i < customers.length; i++) {
-                a(href=`customerEvaluationDetail/${customers[i][0]}`)
+                a(href=`/management/customerEvaluationDetail/${customers[i][0]}`)
                     p #{customers[i][1]}
             -}

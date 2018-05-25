@@ -2,34 +2,27 @@ extends layout
 
 //- 메인 페이지
 block content
-  if state === 'beforeLogin'
-    .card
-      img.card-img(src="https://eharitonova.ru/wp-content/uploads/2017/08/cafe.jpg" alt="networking")
-      .carousel-caption
-        b Welcome to Prompt
-    .container.mt-3
-      .row
-        .col-md-6
-          h3(style="font-weight: bold") 서비스 목적
-          p.ml-3 본 서비스는 Database Programming 프로젝트를 위해서 사내 업무용 웹기반 시스템의 설계 및 개발하는 것입니다. 
-        .col-md-6
-          h3(style="font-weight: bold") 주요 기능
-          .row
-            .col-md-6
-              ul
-                li 회원가입
-                li 로그인/로그아웃
-                li 내 정보조회
-                li 직원 관리
-                li 고객 관리
-                li 고객 등록
-            .col-md-6
-              ul
-                li 프로젝트 관리
-                li 프로젝트 등록
-                li PM 등록
-                li 프로젝트 인원 투입
-                li 내 프로젝트 정보 조회
-                li 고객평가
-  else
-    p= state
+  .card
+    img.card-img(src="https://eharitonova.ru/wp-content/uploads/2017/08/cafe.jpg" alt="networking")
+    .carousel-caption
+      b Welcome to Prompt
+  .container.mt-3
+    .row
+      .col-md-6
+        h3(style="font-weight: bold") 서비스 목적
+        p.ml-3 본 서비스는 Database Programming 프로젝트를 위해서 사내 업무용 웹기반 시스템의 설계 및 개발하는 것입니다. 
+      .col-md-6
+        h3(style="font-weight: bold") 주요 기능
+        .row
+          .col-md-6
+            ul
+              li 회원가입
+              li 로그인/로그아웃
+              li 내 정보조회
+              li 고객 관리(경영진)
+          .col-md-6
+            ul
+              li 고객 등록
+              li 프로젝트 등록
+              li PM 등록
+              li 프로젝트 인원 투입
