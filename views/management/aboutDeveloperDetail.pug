@@ -1,0 +1,30 @@
+extends ../layout
+
+//- 직원 관리 상세 페이지
+block content
+  form(action="#", method="post")
+    .row.mt-3
+      .col.text-center
+        h2.text-center.mt-3 상세 정보
+    .row.align-items-center.mt-4
+      .col
+        h3.mb-3.ml-3 선택된 개발자
+        input.form-control(type="text" name="developer" value=`${selected}` readonly)
+    .row.align-items-center.mt-4
+      .col
+        table.table.text-center(width="700" border="1")
+          thead
+            tr
+              th(scope="col") 프로젝트 이름
+              th(scope="col") 직무
+              th(scope="col") 투입 일자
+              th(scope="col") 방출 일자
+              th(scope="col") 경험한 기술
+          tbody
+            each value in result
+              tr
+                td=value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
