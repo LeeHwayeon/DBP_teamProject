@@ -9,6 +9,7 @@ block content
     .col
       h3.mb-3.ml-3 선택된 개발자
       input.form-control(type="text" name="developer" value=`${selected}` readonly)
+  br
   h4 현재 진행중인 프로젝트
   .row.align-items-center.mt-4
     .col
@@ -32,7 +33,7 @@ block content
               td=moment(value[3]).format('YYYY-MM-DD')
               td=value[4]
               td=moment(value[5]).format('YYYY-MM-DD')
-              td=value[6]
+              td=moment(value[6]).format('YYYY-MM-DD')
               td=value[7]
   h4 완료된 프로젝트
   .row.align-items-center.mt-4
@@ -57,5 +58,5 @@ block content
               td=moment(value[3]).format('YYYY-MM-DD')
               td=value[4]
               td=moment(value[5]).format('YYYY-MM-DD')
-              td=value[6]
+              td=moment(value[6]).format('YYYY-MM-DD')
               td=value[7]
