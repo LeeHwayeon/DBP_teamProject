@@ -1,0 +1,62 @@
+extends ../layout
+
+//- new PM 등록 페이지
+block content
+  div.mr-3.ml-3
+    .form-group
+      h1.text-center.mt-5 Enroll PM
+      if dev !== undefined
+        h2.text-center.mt-5(style='color: blue') #{'이름 : ' + dev[1]}
+        h4.text-center #{'경력 : ' + moment.duration(moment(new Date()).diff(dev[2])).asMonths().toFixed(1)}개월
+        h4.text-center #{'총 PM 경력 ' + pmCount + '회'}
+      if selected !== undefined
+        .row.mt-4
+          .col-sm-12
+            ul.list-group
+              li.list-group-item #{'프로젝트명 : ' + selected[0][1]}
+              li.list-group-item #{'프로젝트 시작일 : ' + moment(selected[0][2]).format('YYYY-MM-DD')}
+              li.list-group-item #{'프로젝트 종료일 : ' + moment(selected[0][3]).format('YYYY-MM-DD')}
+              li.list-group-item
+                a(href=`/management/client/${selected[0][4]}`) #{'발주처 : ' + selected[0][5]}
+      form(action="/management/addPMtable", method="post", id="addPM")
+        if selected === undefined
+          input(type="hidden" name="project_num" value=`${project_num}`)
+          input(type="hidden" name="developer" value=`${dev[0]}`)
+        if selected === undefined  
+          .row.mt-4
+            .col
+              h2.text-center.mt-5 Join date
+              input.form-control(type="date" name="join_date")
+        .row.mt-4
+        if selected !== undefined
+          .col
+            h2.text-center.mt-5 Developer to become PM
+            nav.navbar.navbar-light
+              form.form-inline
+            nav.navbar.navbar-light.mb-3.pull-right
+              form.form-inline(action='/management/showDevToPm', method='post')
+                input(type="hidden" name="project_num" value=`${selected[0][0]}`)
+                input.form-control.mr-sm-2(type="text" name="search_key" placeholder="developer ID" aria-label="Search")
+                button.btn.btn-outline-secondary.my-2.my-sm-0(type="submit") 검색
+      if pmCount > 0
+        .row.mt-4
+          .col
+            h2.text-center.mt-5 현재 PM을 맡은 프로젝트
+            table.table
+              thead.thead-light
+                tr
+                  th(scope="col") 프로젝트명
+                  th(scope="col") 발주처
+                  th(scope="col") 프로젝트 시작일
+                  th(scope="col") 프로젝트 종료일
+              tbody
+                each prj in curPrj
+                  tr
+                    td= prj[0]
+                    td= prj[1]
+                    td= moment(prj[2]).format('YYYY-MM-DD')
+                    td= moment(prj[3]).format('YYYY-MM-DD')
+      if selected === undefined
+        .row.justify-content-start.mt-4
+          .col(style="margin-bottom: 1em")
+            button.btn.btn-dark.mr-3(type="submit", style="float: right", form="addPM") Appoint PM

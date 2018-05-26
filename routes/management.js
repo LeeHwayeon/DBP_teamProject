@@ -140,7 +140,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
               console.error(err.message);
               return;
             }
-            if (prj_cur.rows.length === 0 && prj_before.rows.length === 0 && prj_future.rows.length) {
+            if (prj_cur.rows.length === 0 && prj_before.rows.length === 0 && prj_future.rows.length == 0) {
               alert('관련 프로젝트 정보가 없습니다.');
               return res.redirect('back');
             }
@@ -266,7 +266,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 프로젝트 상세페이지로 이동
   router.get('/prj/:id', (req, res, next) => {
-    connection.execute('select p.project_name, p.begin_date, p.end_date, c.num as client_num, c.client_name from project p, client c where c.num = p.order_customer and p.num = \'' + req.params.id + '\'', (err, result) => {
+    connection.execute('select p.project_name, p.begin_date, p.end_date, c.num as client_num, c.client_name, p.num from project p, client c where c.num = p.order_customer and p.num = \'' + req.params.id + '\'', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
@@ -289,7 +289,127 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  // 등록 페이지로 이동
+  // PM으로 등록/변경할 개발자 선택 페이지
+  router.get('/appointPM/:pNum', (req, res, next) => {
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.num, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.params.pNum + '', (err, selectedPrj) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      res.render('management/appointPM', { state: 'management', project_num: req.params.pNum, selected: selectedPrj.rows});
+    });
+  });
+
+  // 개발자 검색
+  router.post('/showDevToPm', (req, res, next) => {
+    if (req.body.search_key.length === 0) {
+      alert('다시 시도하십시오.');
+      return res.redirect('back');
+    }
+    var dId = req.body.search_key;
+    var project_num = req.body.project_num;
+
+    connection.execute('select count(*) from developer d, pm where pm.developer_num = d.num and d.id = \'' + dId + '\'', (req, pmCount) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      connection.execute('select project_name, c.client_name, p.begin_date, p.end_date from developer d, pm, project p, client c where pm.developer_num = d.num and d.id = \'' + dId + '\' and pm.project_num = p.num and BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate) and c.num = p.order_customer', (err, curPrj) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        connection.execute('select num, user_name, join_company_date from developer where id = \'' + dId + '\'', (err, dev) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          res.render('management/appointPM', { state: 'management', project_num, pmCount: pmCount.rows[0][0], curPrj: curPrj.rows, dev: dev.rows[0]});
+        })
+      });
+    });
+  });
+
+  // PM 등록/변경 처리
+  router.post('/addPMtable', (req, res, next) => {
+    var prj = req.body.project_num;
+    var dev = req.body.developer;
+
+    if (req.body.developer === undefined) {
+      alert("PM으로 선택된 개발자가 없습니다.");
+      return res.redirect("/");
+    }
+
+    // TODO: 유효하지 않은 투입일 체크.
+    if (req.body.join_date.length === 0) {
+      alert("투입일을 입력하세요.");
+      return res.redirect("/management/prj/" + prj);
+    }
+    
+    // PK가 개발자번호 + 플젝번호라 이미 다른 직무를 맡고있는 경우 인풋테이블에 PM으로 못들어감.
+    connection.execute('select count(*) from project_input where project_num = ' + prj + ' and developer_num = ' + dev, (err, pi_flag) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+
+      if (pi_flag.rows[0][0] === 1) {
+        alert('이미 다른 직무를 맡고 있어 PM 설정이 불가능합니다.');
+        return res.redirect("/management/prj/" + prj);
+      }
+
+      connection.execute('select count(*) from pm where project_num = \'' + prj + '\'', (err, pm_flag) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }  
+        if (pm_flag.rows[0][0] === 0) {
+          // insert
+          connection.execute('insert into pm(developer_num, project_num) values(' + dev + ', ' + prj + ')', (err, result) => {
+            if (err) {
+              console.error(err.message);
+              return;
+            }
+            // input테이블에도 pm을 넣어야 하는가? -> 이 사람에 관련된 프로젝트 정보 조회 위해.
+            connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + prj + ', ' + dev + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
+              if (err) {
+                console.error(err.message);
+                return;
+              }
+              alert("PM이 등록되었습니다.");
+              return res.redirect('/management/prj/' + prj);
+            });
+          });
+        } else {
+          // update
+          connection.execute('select developer_num from pm where project_num = ' + prj, (err, before) => {
+            if (err) {
+              console.error(err.message);
+              return;
+            }
+            connection.execute('update pm set developer_num = \'' + dev + '\' where project_num = \'' + prj + '\'', (err, result) => {
+              if (err) {
+                console.error(err.message);
+                return;
+              }
+              
+              // 이전 개발자 번호..?
+              connection.execute('update project_input set developer_num = ' + dev + ' where project_num = ' + prj + ' and developer_num = ' + before.rows[0][0] + '', (err, result) => {
+                if (err) {
+                  console.error(err.message);
+                  return;
+                }
+                alert("PM이 변경되었습니다.");
+                return res.redirect('/management/prj/' + prj);
+              });
+            });
+          });
+        }
+      });
+    });
+  });
+
+  // 프로젝트 등록 페이지로 이동
   router.get('/addProject', (req, res, next) => {
     connection.execute('select * from client', (err, result) => {
       if (err) {
@@ -308,74 +428,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return;
       }
       alert("프로젝트가 등록되었습니다.");
-      res.render('index', { state: 'management' });
-    });
-  });
-
-
-
-
-
-  /* 
-    4. PM등록(이후 프로젝트 관리랑 병합 예정)
-  */
-  // 페이지 이동
-  router.get('/showPrjNoPM', (req, res, next) => {
-    // PM이 없는 프로젝트에 대한 정보만.
-    connection.execute('select project.num, project_name, begin_date, end_date, client_name from project, client where client.num = project.order_customer minus select project.num, project_name, begin_date, end_date, client_name from client, project, project_input where client.num = project.order_customer and project.num = project_input.project_num and project_input.role_in_project = \'pm\'', (err, projects) => {
-      if (err) {
-        console.error(err.message);
-        return;
-      }
-      res.render('management/showPrjNoPM', { state: 'management', projects: projects.rows });
-    });
-  });
-
-  // PM이 될 개발자 선택
-  router.post('/appointPM', (req, res, next) => {
-    if (req.body.prj === undefined) {
-      alert("선택된 프로젝트가 없습니다.");
-      return res.redirect("back");
-    }
-    connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, developers) => {
-      if (err) {
-        console.error(err.message);
-        return;
-      }
-      connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.prj + '', (err, selectedPrj) => {
-        if (err) {
-          console.error(err.message);
-          return;
-        }
-        var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
-        res.render('management/appointDeveloper', { state: 'management', developer: developers.rows, project_num: req.body.prj, selected });
-      });
-    });
-  });
-
-  // PM 등록 처리
-  router.post('/addPMtable', (req, res, next) => {
-    if (req.body.developer === undefined) {
-      alert("PM으로 선택된 개발자가 없습니다.");
-      return res.redirect("/");
-    }
-    if (req.body.join_date.length === 0) {
-      alert("투입일을 입력하세요.");
-      return res.redirect("/");
-    }
-    connection.execute('insert into pm(developer_num, project_num) values(' + req.body.developer + ', ' + req.body.project_num + ')', (err, result) => {
-      if (err) {
-        console.error(err.message);
-        return;
-      }
-      connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + req.body.project_num + ', ' + req.body.developer + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
-        if (err) {
-          console.error(err.message);
-          return;
-        }
-        alert("PM이 등록되었습니다.");
-        res.render('index', { state: 'management' });
-      });
+      res.redirect('/management/aboutProject');
     });
   });
 
