@@ -451,6 +451,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return;
       }  
 
+      // PM평가목록
       var pms={};
       connection.execute('select project_num, project.project_name from project, pm_evaluation where project.num = pm_evaluation.project_num', (err, pms) => {
         console.log(pms)
