@@ -423,16 +423,53 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   */
   // 페이지 이동
   router.get('/inAndOut', (req, res, next) => {
-    // connection.execute('', (err, result) => {
-    //   if (err) {
-    //     console.error(err.message);
-    //     return;
-    // }
-    //   console.log(result.rows);
-    //   return res.render('inAndOut', { state: 'management', result: result.rows});
-    // });
-    return res.render('management/inAndOut', { state: 'management' });
+    // 진행중인 프로젝트만 보여줌_프로젝트가 진행중일때만 개발자의 투입방출일자를 수정하도록
+    connection.execute('select project.num, project_name, begin_date, end_date, client_name from project, client where client.num = project.order_customer and BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)', (err, projects) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      res.render('management/inAndOut', { state: 'management', projects: projects.rows });
+    });
   });
+
+  //투입,방출일자를 수정하고 싶은 개발자 선택
+  router.post('/appointToModify', (req, res, next) => {
+    if (req.body.prj === undefined) {
+      alert("선택된 프로젝트가 없습니다.");
+      return res.redirect("back");
+    }
+    connection.execute('select num, id, user_name, join_date, out_date from project_input, developer where developer.num (+)= project_input.developer_num and project_input.project_num = ' +  req.body.prj + '' , (err, developers) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.prj + '', (err, selectedPrj) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
+        res.render('management/appointToModify', { state: 'management', developer: developers.rows, project_num: req.body.prj, selected });
+      });
+    });
+  });
+
+  //투입,방출일자 수정 처리
+  router.post('/modifiedInAndOut', (req, res, next) => {
+    if (req.body.developer === undefined) {
+      alert("선택된 개발자가 없습니다.");
+      return res.redirect("/");
+    }
+    connection.execute('update project_input set join_date = \'' +  req.body.join_date + '\', out_date = \'' + req.body.out_date + '\' where developer_num = \'' + req.body.developer +'\' and project_num = \'' + req.body.project_num+ '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+        alert("수정완료");
+        res.render('index', { state: 'management' });
+      });
+    });
 
 
 
