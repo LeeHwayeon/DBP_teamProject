@@ -40,5 +40,9 @@ block content
                 td=moment(value[3]).format('YYYY-MM-DD')
                 td=moment(value[4]).format('YYYY-MM-DD')
                 td=value[5]
-              //- TODO: 평가 관련 정보  
+              //- TODO: 평가 관련 정보
+    .row.justify-content-start
+      .col(style="margin-bottom: 1em")
+        //- TODO: 현재 선택된 프로젝트로 연결해서 인원투입
+        button.btn.btn-outline-dark.mr-3(type="button" onclick=`location.href='/management/prjInput'` style="float: right") 인원투입
       
