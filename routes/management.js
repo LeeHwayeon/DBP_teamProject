@@ -272,12 +272,12 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return;
       }
       // PM이 아닌 인원들에 대해서만 정보 출력
-      connection.execute('select d.id, d.user_name, pi.role_in_project, pi.join_date, pi.out_date, d.skill from project_input pi, developer d where d.num = pi.developer_num and pi.role_in_project != \'pm\' and pi.project_num = \'' + req.params.id + '\'', (err, pi_result) => {
+      // skill은 해당 프로젝트에서 맡은 skill만
+      connection.execute('select d.id, d.user_name, pi.role_in_project, pi.join_date, pi.out_date, pi.skill from project_input pi, developer d where d.num = pi.developer_num and pi.role_in_project != \'pm\' and pi.project_num = \'' + req.params.id + '\'', (err, pi_result) => {
         if (err) {
           console.error(err.message);
           return;
         }
-        // TODO: PM 지정 전에는 프로젝트 인원투입 불가하도록.
         connection.execute('select id, user_name from developer where num = (select developer_num from pm where project_num = \'' + req.params.id + '\')', (err, pm_result) => {
           if (err) {
             console.error(err.message);
@@ -340,7 +340,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.redirect("/");
     }
 
-    // TODO: 유효하지 않은 투입일 체크.
     if (req.body.join_date.length === 0) {
       alert("투입일을 입력하세요.");
       return res.redirect("/management/prj/" + prj);
@@ -439,20 +438,34 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 인원투입 페이지로 이동
   router.get('/prjInput/:id', (req, res, next) => {
-    console.log(req.params.id);
-    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.num, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.params.id + '', (err, selectedPrj) => {
+    // PM 지정 전에는 프로젝트 인원투입 불가하도록.
+    connection.execute('select count(*) from pm where project_num = \'' + req.params.id + '\'', (err, hasPM) => {
       if (err) {
         console.error(err.message);
         return;
       }
-
-      connection.execute('select num, id, user_name, resident_registration_number, join_company_date, skill from developer', (err, dev) => {
-        if (err) {
-          console.error(err.message);
-          return;
-        }
-        res.render('management/prjInput', { state: 'management', developers: dev.rows, selected: selectedPrj.rows });
-      });
+      
+      if (hasPM.rows[0][0] !== 0) {
+        connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.num, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.params.id + '', (err, selectedPrj) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          
+          // 이미 해당 프로젝트에 투입되어있는 개발자 & PM은 빼고 보이게.
+          // TODO: 투입되어있는 사람들에 대한 수정/삭제 필요
+          connection.execute('select num, id, user_name, resident_registration_number, join_company_date, skill from developer minus select d.num, d.id, d.user_name, d.resident_registration_number, d.join_company_date, d.skill from project_input pi, developer d where d.num = pi.developer_num and pi.project_num = ' + req.params.id + '', (err, dev) => {
+            if (err) {
+              console.error(err.message);
+              return;
+            }
+            return res.render('management/prjInput', { state: 'management', developers: dev.rows, selected: selectedPrj.rows });
+          });
+        });
+      } else {
+        alert('PM을 먼저 지정해주세요.');
+        res.redirect('back');
+      }
     });
   });
 
@@ -495,7 +508,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 인원 투입 처리
   router.post('/addProjectInput', (req, res, next) => {
-    
     // 유효한 투입 날짜인지 체크
     connection.execute('select begin_date, end_date from project where num = ' + req.body.project_num + '', (err, isValid) => {
       if (err) {
@@ -530,51 +542,87 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       }
 
       // 한명
-    if (typeof req.body.join_date === 'string') {
-      if (req.body.join_date.length === 0) {
-        alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
-        return res.render('index', { state: 'management'});
-      }
-
-      let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num + ', \'' + req.body.role + '\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill + '\')';
-      connection.execute(query, (err, result) => {
-        if (err) {
-          console.error(err.message);
-          return;
+      if (typeof req.body.join_date === 'string') {
+        if (req.body.join_date.length === 0) {
+          alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
+          return res.render('index', { state: 'management'});
         }
-        connection.execute('update developer set skill = \'' + req.body.skill + '\' where num = ' + req.body.developer_num + '', (err, result) => {
-          if (err) {
-            console.error(err.message);
-            return;
-          }
-        });
-      });
 
-    } else {
-      // 여러명
-      if (req.body.join_date.includes('')) {
-        alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
-        return res.render('index', { state: 'management'});
-      }
-
-      for (let i = 0; i < req.body.developer_num.length; i++) {
-        let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num[i] + ', \'' + req.body.role[i] + '\', to_date(\'' + req.body.join_date[i] + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill[i] + '\')';
+        // pi테이블 안에는 해당 프로젝트에 대한 기술만.
+        // 개발자 테이블의 skill에는 그동안 겪은 모든 프로젝트에 대한 기술의 총합
+        let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num + ', \'' + req.body.role + '\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill + '\')';
         connection.execute(query, (err, result) => {
           if (err) {
             console.error(err.message);
             return;
           }
-          connection.execute('update developer set skill = \'' + req.body.skill[i] + '\' where num = ' + req.body.developer_num[i] + '', (err, result) => {
+          connection.execute('select skill from developer where num = ' + req.body.developer_num + '', (err, hasSkill) => {
             if (err) {
               console.error(err.message);
               return;
             }
+          
+            if (hasSkill.rows[0][0] !== null) {
+              // 개발자 skill 정보 = 기존정보 + 새스킬
+              connection.execute('update developer set skill = (select skill from developer where num = ' + req.body.developer_num + ') || \', ' + req.body.skill + '\' where num = ' + req.body.developer_num + '', (err, result) => { 
+                if (err) {
+                  console.error(err.message);
+                  return;
+                }
+              });
+            } else {
+              connection.execute('update developer set skill = \'' + req.body.skill + '\' where num = ' + req.body.developer_num + '', (err, result) => {
+                if (err) {
+                  console.error(err.message);
+                  return;
+                }
+              });
+            }
           });
         });
+      } else {
+        // 여러명
+        if (req.body.join_date.includes('')) {
+          alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
+          return res.render('index', { state: 'management'});
+        }
+
+        for (let i = 0; i < req.body.developer_num.length; i++) {
+          let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num[i] + ', \'' + req.body.role[i] + '\', to_date(\'' + req.body.join_date[i] + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill[i] + '\')';
+          connection.execute(query, (err, result) => {
+            if (err) {
+              console.error(err.message);
+              return;
+            }
+
+            connection.execute('select skill from developer where num = ' + req.body.developer_num[i] + '', (err, hasSkill) => {
+              if (err) {
+                console.error(err.message);
+                return;
+              }
+          
+              if (hasSkill.rows[0][0] !== null) {
+                // 개발자 skill 정보 = 기존정보 + 새스킬
+                connection.execute('update developer set skill = (select skill from developer where num = ' + req.body.developer_num[i] + ') || \', ' + req.body.skill[i] + '\' where num = ' + req.body.developer_num[i] + '', (err, result) => { 
+                  if (err) {
+                    console.error(err.message);
+                    return;
+                  }
+                });
+              } else {
+                connection.execute('update developer set skill = \'' + req.body.skill[i] + '\' where num = ' + req.body.developer_num[i] + '', (err, result) => {
+                  if (err) {
+                    console.error(err.message);
+                    return;
+                  }
+                });
+              }
+            });
+          });
+        }
       }
-    }
-    alert("해당 인원이 프로젝트에 투입되었습니다.");
-    res.render('index', { state: 'management' });
+      alert("해당 인원이 프로젝트에 투입되었습니다.");
+      res.render('index', { state: 'management' });
     });
   });
 
