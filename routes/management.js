@@ -39,6 +39,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 삭제
   router.delete('/showDeveloper', (req, res, next) => {
+    // TODO: 여러명 삭제
     var query = 'select count(*) from pm, developer d where d.num = pm.developer_num and ';
     if (typeof req.body.for_deleted === 'object') {
       query += '(';
@@ -53,7 +54,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       alert('삭제할 직원을 선택하세요.');
       return res.redirect('back');
     }
-    console.log(query);
 
     connection.execute(query, (err, isPm) => {
       if (err) {
@@ -77,7 +77,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         } else {
           q += 'd.id = \'' + req.body.for_deleted + '\'';
         }
-        console.log(q);
+
         connection.execute(q, (err, isWork) => {
           if (err) {
             console.error(err.message);
@@ -422,6 +422,11 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 프로젝트 등록처리
   router.post('/addProject', (req, res, next) => {
+    if (moment.duration(moment(req.body.begin_date).diff(req.body.end_date)).asDays().toFixed(1) > 0) {
+      alert('시작일은 종료일 이전이어야 합니다.');
+      return res.redirect('back');
+    }
+
     connection.execute('insert into project(num, project_name, begin_date, end_date, order_customer) values(seq_project.nextval, \'' + req.body.name + '\', to_date(\'' + req.body.begin_date + '\', \'yyyy-MM-dd\'), to_date(\'' + req.body.end_date + '\', \'yyyy-MM-dd\'), ' + req.body.client + ')', (err, result) => {
       if (err) {
         console.error(err.message);
@@ -432,38 +437,32 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-
-
-
-
-  /* 
-    5. 프로젝트 인원투입(이후 프로젝트 관리랑 병합 예정)
-  */
-  // 페이지 이동
-  router.get('/prjInput', (req, res, next) => {
-    connection.execute('select project.num, project_name, client_name from project, client where project.order_customer = client.num', (err, prj) => {
+  // 인원투입 페이지로 이동
+  router.get('/prjInput/:id', (req, res, next) => {
+    console.log(req.params.id);
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.num, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.params.id + '', (err, selectedPrj) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      connection.execute('select num, id, user_name, resident_registration_number, education, join_company_date, skill from developer', (err, dev) => {
+
+      connection.execute('select num, id, user_name, resident_registration_number, join_company_date, skill from developer', (err, dev) => {
         if (err) {
           console.error(err.message);
           return;
         }
-        res.render('management/prjInput', { state: 'management', projects: prj.rows, developers: dev.rows });
+        res.render('management/prjInput', { state: 'management', developers: dev.rows, selected: selectedPrj.rows });
       });
     });
   });
 
   // 인원 투입 관련 입력받기
   router.post('/configureInput', (req, res, next) => {
-    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.project + '', (err, selectedPrj) => {
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.num, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.project + '', (err, selectedPrj) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
 
       // 선택한 개발자가 한 명인 경우
       if (typeof req.body.developer === 'string') {
@@ -485,7 +484,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
             console.error(err.message);
             return;
           }
-          return res.render('management/configureInput', { state: 'management', selected, project_num: req.body.project, developer: developer.rows });
+          return res.render('management/configureInput', { state: 'management', selected: selectedPrj.rows , project_num: req.body.project, developer: developer.rows });
         });
       } else {
         alert("선택된 개발자가 없습니다.");
@@ -519,7 +518,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       // 여러명
       if (req.body.join_date.includes('')) {
         alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
-        return res.render('index', { state: 'management'});
+        return res.redirect('');
       }
       for (let i = 0; i < req.body.developer_num.length; i++) {
         let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num[i] + ', \'' + req.body.role[i] + '\', to_date(\'' + req.body.join_date[i] + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill[i] + '\')';
@@ -560,7 +559,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  //투입,방출일자를 수정하고 싶은 개발자 선택
+  // 투입,방출일자를 수정하고 싶은 개발자 선택
   router.post('/appointToModify', (req, res, next) => {
     if (req.body.prj === undefined) {
       alert("선택된 프로젝트가 없습니다.");
@@ -582,21 +581,22 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  //투입,방출일자 수정 처리
+  // 투입,방출일자 수정 처리
   router.post('/modifiedInAndOut', (req, res, next) => {
     if (req.body.developer === undefined) {
       alert("선택된 개발자가 없습니다.");
       return res.redirect("/");
     }
+
     connection.execute('update project_input set join_date = \'' +  req.body.join_date + '\', out_date = \'' + req.body.out_date + '\' where developer_num = \'' + req.body.developer +'\' and project_num = \'' + req.body.project_num+ '\'', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
-        alert("수정완료");
-        res.render('index', { state: 'management' });
-      });
+      alert("수정완료");
+      res.render('index', { state: 'management' });
     });
+  });
 
 
 
