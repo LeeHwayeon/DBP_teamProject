@@ -471,7 +471,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
             console.error(err.message);
             return;
           }
-          return res.render('management/configureInput', { state: 'management', selected, project_num: req.body.project, developer: developer.rows });
+          return res.render('management/configureInput', { state: 'management', selected: selectedPrj.rows, project_num: req.body.project, developer: developer.rows });
         });
       } else if (typeof req.body.developer === 'object') {
         // 선택한 개발자가 여러명인 경우
@@ -495,12 +495,47 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 인원 투입 처리
   router.post('/addProjectInput', (req, res, next) => {
-    if (typeof req.body.join_date === 'string') {
+    
+    // 유효한 투입 날짜인지 체크
+    connection.execute('select begin_date, end_date from project where num = ' + req.body.project_num + '', (err, isValid) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+
+      if (typeof req.body.join_date === 'string') {
+        // 한명
+        if (moment.duration(moment(isValid.rows[0][0]).diff(req.body.join_date)).asDays().toFixed(1) > 0) {
+          alert('프로젝트 진행기간이 아닐 때 개발자를 투입할 수 없습니다.');
+          return res.render('index', { state: 'management'});
+        } else {
+          if (moment.duration(moment(isValid.rows[0][1]).diff(req.body.join_date)).asDays().toFixed(1) < 0) {
+            alert('프로젝트 진행기간이 아닐 때 개발자를 투입할 수 없습니다.');
+            return res.render('index', { state: 'management'});
+          }
+        }
+      } else {
+        // 여러명
+        for (let i = 0; i < req.body.join_date.length; i++) {
+          if (moment.duration(moment(isValid.rows[0][0]).diff(req.body.join_date[i])).asDays().toFixed(1) > 0) {
+            alert('프로젝트 진행기간이 아닐 때 개발자를 투입할 수 없습니다.');
+            return res.render('index', { state: 'management'});
+          } else {
+            if (moment.duration(moment(isValid.rows[0][1]).diff(req.body.join_date[i])).asDays().toFixed(1) < 0) {
+              alert('프로젝트 진행기간이 아닐 때 개발자를 투입할 수 없습니다.');
+              return res.render('index', { state: 'management'});
+            }
+          }
+        }
+      }
+
       // 한명
+    if (typeof req.body.join_date === 'string') {
       if (req.body.join_date.length === 0) {
         alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
         return res.render('index', { state: 'management'});
       }
+
       let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num + ', \'' + req.body.role + '\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill + '\')';
       connection.execute(query, (err, result) => {
         if (err) {
@@ -514,12 +549,14 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           }
         });
       });
+
     } else {
       // 여러명
       if (req.body.join_date.includes('')) {
         alert("투입 날짜가 결정되지 않은 개발자가 있습니다. 다시 시도하십시오.");
-        return res.redirect('');
+        return res.render('index', { state: 'management'});
       }
+
       for (let i = 0; i < req.body.developer_num.length; i++) {
         let query = 'insert into project_input values(' + req.body.project_num + ', ' + req.body.developer_num[i] + ', \'' + req.body.role[i] + '\', to_date(\'' + req.body.join_date[i] + '\', \'yyyy-MM-dd\')' + ', null, \'' + req.body.skill[i] + '\')';
         connection.execute(query, (err, result) => {
@@ -538,6 +575,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     }
     alert("해당 인원이 프로젝트에 투입되었습니다.");
     res.render('index', { state: 'management' });
+    });
   });
 
 
