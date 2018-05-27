@@ -2,35 +2,39 @@ extends ../layout
 
 //- 직원 관리 페이지(경영진)
 block content
-  //- 직원 검색
-  h2.text-center.mt-3 직원 검색
-  form(action='/management/showDeveloper', method='post')
-    select.custom-select(name="selected_search_key", size="1")
-      option(value='id') ID
-      option(value='name') 이름
-    .input-group.mb-3
-      input.form-control(type="text" name="search_key")
-      .input-group-append
-        button.btn.btn-outline-secondary(type="submit") 검색
-  //- 검색 전 모든 직원 정보 보여줌, 검색 후 검색된 직원 정보만 보여줌
-  h4 직원 정보
-  form(action='/management/showDeveloper?_method=DELETE', method='POST')
-    button.btn.btn-outline-primary(type="submit") 선택삭제
-    table.table.text-center(width="700" border="1")
-      thead
-        tr
-          th(scope="col")
-          th(scope="col") ID
-          th(scope="col") 이름
-          th(scope="col") 경력
-      tbody
-          each d in result
-            tr
-              td
-                .form-check
-                  input#defaultCheck1.form-check-input(type="checkbox" name="for_deleted" value=`${d[0]}`)
-              td
-                a(href=`/management/detail/${d[0]}`)= d[0]
-              td= d[1]
-              td #{moment.duration(moment(new Date()).diff(d[2])).asMonths().toFixed(1)}개월
+  .container
+    //- 직원 검색
+    h2.text-center.mt-3 직원 관리
+    h4 직원 검색
+    form(action='/management/showDeveloper', method='post')
+      select.custom-select(name="selected_search_key", size="1")
+        option(value='id') ID
+        option(value='name') 이름
+      .input-group.mb-3
+        input.form-control(type="text" name="search_key")
+        .input-group-append
+          button.btn.btn-outline-secondary(type="submit") 검색
+    //- 검색 전 모든 직원 정보 보여줌, 검색 후 검색된 직원 정보만 보여줌
+    h4 직원 목록
+    form(action='/management/showDeveloper?_method=DELETE', method='POST')
+      button.btn.btn-dark(type="submit" style="float: right") 직원 선택 삭제
+      br
+      br
+      table.table.text-center(width="700" border="1")
+        thead
+          tr
+            th(scope="col")
+            th(scope="col") ID
+            th(scope="col") 이름
+            th(scope="col") 경력
+        tbody
+            each d in result
+              tr
+                td
+                  .form-check
+                    input#defaultCheck1.form-check-input(type="checkbox" name="for_deleted" value=`${d[0]}`)
+                td
+                  a(href=`/management/detail/${d[0]}`)= d[0]
+                td= d[1]
+                td #{moment.duration(moment(new Date()).diff(d[2])).asMonths().toFixed(1)}개월
               

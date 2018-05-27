@@ -10,6 +10,8 @@ block content
             .row.align-items-center.mt-2
                 .col
                     h3.mb-3.ml-3 평가 할 개발자 선택
+                        br
+                        br
                         table.table.text-center
                             thead
                                 tr
@@ -22,6 +24,7 @@ block content
                                             .form-check
                                                 input#defaultRadio1.form-radio-input(type="radio" name="evaluated" value=`${d[0]}`)
                                         td= d[0]
+            h3.mb-3.ml-3 평가 내용 입력
             .form-group
                 label(for="inputWorkScore") Work Score
                 input#inputworkscore.form-control(type="number" name="work_score" min="0" max="100" placeholder="0~100점")

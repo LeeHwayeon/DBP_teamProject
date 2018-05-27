@@ -195,13 +195,27 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   */
   // 페이지 이동
   router.get('/aboutProject', (req, res, next) => {
-    connection.execute('select * from project where BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)', (err, result) => {
+    var query = 'select p.project_name, p.begin_date, p.end_date,c.client_name from project p, client c where c.num = p.order_customer and ';
+    var date_condition1 = 'BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)';
+    var date_condition2 = 'END_DATE < trunc(sysdate)';
+    connection.execute(query + date_condition1, (err, prj_cur) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      res.render('management/aboutProject', { state: 'management', result: result.rows });
+      connection.execute(query + date_condition2, (err, prj_before) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        if (prj_cur.rows.length === 0 && prj_before.rows.length === 0) {
+          alert('관련 프로젝트 정보가 없습니다.');
+          return res.redirect('back');
+        }
+        res.render('management/aboutProject', { state: 'management', prj_cur: prj_cur.rows, prj_before: prj_before.rows });
+      });
     });
+
   });
 
   // 검색
