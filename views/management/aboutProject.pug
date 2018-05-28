@@ -3,6 +3,14 @@ extends ../layout
 //- 프로젝트 관리 페이지
 block content
   h1.text-center.mt-5 Project
+  //- 이부분 안맞을 수 있음!
+  h4 프로젝트 검색
+    form(action='/management/showProject', method='post')
+      .input-group.mb-3
+        input.form-control(type="text" name="project" placeholder="input project name!")
+        .input-group-append
+          button.btn.btn-dark(type="submit") 프로젝트 검색
+  //- 이부분 안맞을 수 있음!
   button.btn.btn-outline-dark.mr-5(type="button" onclick="location.href='addProject'", style="float: right") 추가
   .row.mt-5
     .col-sm-4
@@ -50,5 +58,3 @@ block content
                 a(href=`/management/prj/${value[0]}`)= value[1]
               td= value[2]
               td #{moment(value[3]).format('YYYY-MM-DD') + ' ~ ' + moment(value[4]).format('YYYY-MM-DD')}
-  
-  

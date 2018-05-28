@@ -1,24 +1,56 @@
 extends ../layout
 
 block content
-    p 마이프로젝트 페이지
-    h4 프로젝트
-    table.table.text-center
-      thead
-        tr
-          th(scope="col") project_num
-          th(scope="col") developer_num
-          th(scope="col") role_in_project
-          th(scope="col") join_date 
-          th(scope="col") out_date
-          th(scope="col") skill
-      tbody
-        each value in result
-          tr
-            td= value[0]
-            td= value[1]
-            td= value[2]
-            td= moment(value[3]).format('YYYY-MM-DD')
-            td= moment(value[4]).format('YYYY-MM-DD')
-            td= value[5]
-            
+  br
+  .container
+    h3.mb-3.ml-3.text-center 프로젝트
+    h4 현재 진행중인 프로젝트
+    .row.align-items-center.mt-4
+      .col
+        table.table.text-center
+          thead
+            tr
+              th(scope="col") 프로젝트명
+              th(scope="col") 발주처
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+              th(scope="col") 직무
+              th(scope="col") 투입 일자
+              th(scope="col") 방출 일자
+              th(scope="col") 경험한 기술
+          tbody
+            each value in prj_cur
+              tr
+                td=value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
+                td=moment(value[5]).format('YYYY-MM-DD')
+                td=moment(value[6]).format('YYYY-MM-DD')
+                td=value[7]
+    h4 완료된 프로젝트
+    .row.align-items-center.mt-4
+      .col
+        table.table.text-center
+          thead
+            tr
+              th(scope="col") 프로젝트명
+              th(scope="col") 발주처
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+              th(scope="col") 직무
+              th(scope="col") 투입 일자
+              th(scope="col") 방출 일자
+              th(scope="col") 경험한 기술
+          tbody
+            each value in prj_before
+              tr
+                td=value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
+                td=moment(value[5]).format('YYYY-MM-DD')
+                td=moment(value[6]).format('YYYY-MM-DD')
+                td=value[7]            

@@ -8,15 +8,29 @@ var moment = require('moment');
 oracledb.autoCommit = true;
 
 oracledb.getConnection(dbConfig, (err, connection) => {
+
   // 내 프로젝트 정보
   // 페이지 이동
   router.get('/myprojects', (req, res, next) => {
-    connection.execute('select project_input.* from project_input, DEVELOPER where developer.id= \'' + req.session.user.ID + '\' and project_input.DEVELOPER_NUM = DEVELOPER.NUM', (err, result) => {
+    var query = 'select p.project_name, c.client_name, p.begin_date, p.end_date, pi.role_in_project, pi.join_date, pi.out_date, pi.skill from project p, project_input pi, developer d, client c where p.num = pi.project_num and pi.developer_num = d.num and c.num = p.order_customer and d.id= \'' + req.session.user.ID + '\' and ';
+    var date_condition1 = 'BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)';
+    var date_condition2 = 'END_DATE < trunc(sysdate)';
+    connection.execute(query + date_condition1, (err, prj_cur) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      res.render('developer/myprojects', { state: 'developer', result: result.rows });
+      connection.execute(query + date_condition2, (err, prj_before) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        if (prj_cur.rows.length === 0 && prj_before.rows.length === 0) {
+          alert('관련 프로젝트 정보가 없습니다.');
+          return res.redirect('back');
+        }
+        res.render('developer/myprojects', { state: 'developer', prj_cur: prj_cur.rows, prj_before: prj_before.rows });
+      });
     });
   });
 
@@ -39,6 +53,24 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
+  // 동료평가
+  // 페이지로 이동
+  router.get('/aboutPeerEvaluation', (req, res, next) =>{
+    user = req.session.user;
+    //로그인 한 사용자가 속해있는 프로젝트 목록을 가져온다.
+    connection.execute('select project.project_name from project,project_input,developer where developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num', (err,result) => {
+      if(err){
+        console.error(err.message);
+        return;
+      }
+      if(result.rows.length === 0){
+        alert("평가할 프로젝트가 없습니다.");
+        return res.redirect('back');
+      }
+      return res.render('developer/aboutPeerEvaluation', {state:'developer', projects:result.rows});  
+    });
+  });
+  
   // 동료평가
   // 평가 할 개발자 선택 및 평가 페이지
   router.post('/selectEvaluated', (req, res, next) => {
@@ -99,6 +131,12 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     }); 
   });
 
+  // 동료평가
+  // 상세 페이지(개발자)
+  // router.post('/peer_evaluation',(req, res, next) => {
+  //   user = req.session.user;    
+
+  // });
 
 });
 

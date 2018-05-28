@@ -238,7 +238,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     var date_condition1 = 'BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)';
     var date_condition2 = 'BEGIN_DATE < trunc(sysdate) and END_DATE < trunc(sysdate)';
     var date_condition3 = 'BEGIN_DATE > trunc(sysdate) and END_DATE > trunc(sysdate)';
-
+    
     connection.execute(query + date_condition1, (err, prj_cur) => {
       if (err) {
         console.error(err.message);
@@ -260,6 +260,29 @@ oracledb.getConnection(dbConfig, (err, connection) => {
           }
           res.render('management/aboutProject', { state: 'management', prj_cur: prj_cur.rows, prj_before: prj_before.rows, prj_future: prj_future.rows });
         });
+      });
+    });
+
+  });
+
+  // 검색
+  router.post('/showProject', (req, res, next) => {
+    connection.execute('select num,project_name from project where project_name=\''+req.body.project+'\'', (err, selectedP) => {
+      if (err) {
+        console.err(err.message);
+        return;
+      }
+      var selected = '이름 : ' + selectedP.rows[0][1];
+      connection.execute('select project.begin_date,project.end_date,client.client_name from client,project where project.order_customer=client.num and project.project_name = \'' + req.body.project + '\'', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        if(result.rows.length === 0){
+          alert('검색할 프로젝트 이름이 입력되지 않았습니다.');
+          return res.redirect('back');
+        }
+      res.render('management/showProject', { state: 'management', selected, result: result.rows });
       });
     });
   });
@@ -345,6 +368,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.redirect("/management/prj/" + prj);
     }
     
+    // TODO: 날짜처리
     // PK가 개발자번호 + 플젝번호라 이미 다른 직무를 맡고있는 경우 인풋테이블에 PM으로 못들어감.
     connection.execute('select count(*) from project_input where project_num = ' + prj + ' and developer_num = ' + dev, (err, pi_flag) => {
       if (err) {
