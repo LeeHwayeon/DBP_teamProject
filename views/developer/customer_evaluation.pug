@@ -3,7 +3,12 @@ extends ../layout
 //- 고객평가
 block content
   h1.main 고객평가
-  form(action="/peer_evaluation", method='post')
+  .row.align-items-center.mt-4
+    .col
+      h3.mb-3.ml-3 선택된 프로젝트
+      input.form-control(type="text" name="project" value=`${selected}` readonly)
+  br      
+  form(action="/developer/addCustomer_evaluation", method='post')
     .form-group
       label(for="inputPnum") Project Number
       input#inputpum.form-control(type="number" name="pnum" placeholder="Enter Project Number")
