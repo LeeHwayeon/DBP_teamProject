@@ -36,20 +36,46 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 고객평가
   // 페이지 이동
-  router.get('/customer_evaluation', (req, res, next) => {
-    res.render('developer/customer_evaluation', { state: 'developer' });
+  router.get('/aboutCustomerEvaluation', (req, res, next) => {
+    //자신이 PM인 프로젝트만 보여줌
+    connection.execute('select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\'', (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }      
+      if(result.rows.length === 0){
+        alert("평가할 프로젝트가 없습니다.");
+        return res.redirect('back');
+      }
+      res.render('developer/aboutCustomerEvaluation', { state: 'developer',  projects: result.rows });  
+    });
   });
 
-  // 고객평가
-  // 등록처리
+  // 고객평가 작성
   router.post('/customer_evaluation', (req, res, next) => {
-    connection.execute('insert into customer_evaluation values(' + req.body.pnum+',' + req.body.evaluator+','+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=> {
+    if (req.body.prj === undefined) {
+      alert("선택된 프로젝트가 없습니다.");
+      return res.redirect("back");
+    }
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.prj + '', (err, selectedPrj) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
+      res.render('developer/customer_evaluation', { state: 'developer', project_num: req.body.prj, selected });
+    });
+  });
+  
+  // 고객평가처리
+  router.post('/addCustomer_evaluation', (req, res, next) => {
+    connection.execute('insert into customer_evaluation values(' + req.body.pnum+',(select client.num from client, project where project.order_customer = client.num and project.num =\''+req.body.pnum+'\'),'+req.body.evaluated+','+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')',(err, result)=> {
       if (err) {
         console.error(err.message);
         return;
       }
       alert("고객평가 등록 완료.");
-      return res.render('customer_evaluation', { state: 'developer'});
+      return res.render('index', { state: 'developer'});
     });
   });
 
