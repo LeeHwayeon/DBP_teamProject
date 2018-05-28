@@ -220,12 +220,23 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 검색
   router.post('/showProject', (req, res, next) => {
-    connection.execute('select * from project where num = \'' + req.body.projectNum + '\'', (err, result) => {
+    connection.execute('select num,project_name from project where project_name=\''+req.body.project+'\'', (err, selectedP) => {
       if (err) {
-        console.error(err.message);
+        console.err(err.message);
         return;
       }
-      res.render('management/aboutProject', { state: 'management', result: result.rows });
+      var selected = '이름 : ' + selectedP.rows[0][1];
+      connection.execute('select project.begin_date,project.end_date,client.client_name from client,project where project.order_customer=client.num and project.project_name = \'' + req.body.project + '\'', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+        if(result.rows.length === 0){
+          alert('검색할 프로젝트 이름이 입력되지 않았습니다.');
+          return res.redirect('back');
+        }
+      res.render('management/showProject', { state: 'management', selected, result: result.rows });
+      });
     });
   });
 
