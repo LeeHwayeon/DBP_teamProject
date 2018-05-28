@@ -6,7 +6,7 @@ block content
         h3.text-center 평가조회
         br
         p.peer-evaluation
-            | 동료 / PM 평가
+            | 동료
         p.project-name 프로젝트 이름
         hr
         .col.text-center
@@ -14,7 +14,17 @@ block content
                 a(href=`/management/peerEvaluationDetail/${projects[i][0]}`)
                     p #{projects[i][1]}
             -}
-      
+
+        p.pm-evaluation
+            | PM 평가
+        p.project-name 프로젝트 이름
+        hr
+        .col.text-center
+            -for(let i = 0; i < pms.length; i++) {
+                a(href=`/management/pmEvaluationDetail/${pms[i][0]}`)
+                    p #{pms[i][1]}
+            -}
+
         p.customer-evaluation
             | 고객 평가
         p.project-name 프로젝트 이름
