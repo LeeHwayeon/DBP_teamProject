@@ -1,49 +1,60 @@
 extends ../layout
 
 //- 프로젝트 관리 페이지
-//- 검색 전 보여지는 값은 현재 날짜에 진행중인 프로젝트
 block content
-  .container
-    h1.text-center.mt-3 프로젝트 관리
-    h4 프로젝트 검색
+  h1.text-center.mt-5 Project
+  //- 이부분 안맞을 수 있음!
+  h4 프로젝트 검색
     form(action='/management/showProject', method='post')
       .input-group.mb-3
         input.form-control(type="text" name="project" placeholder="input project name!")
         .input-group-append
           button.btn.btn-dark(type="submit") 프로젝트 검색
-    button.btn.btn-dark(type="button" onclick="location.href='addProject'" style="float: right") 프로젝트 추가
-    br
-    h4 현재 진행중인 프로젝트 목록
-    .row.align-items-center.mt-4
-      .col
-        table.table.text-center
-          thead
+  //- 이부분 안맞을 수 있음!
+  button.btn.btn-outline-dark.mr-5(type="button" onclick="location.href='addProject'", style="float: right") 추가
+  .row.mt-5
+    .col-sm-4
+      h2.ml-5.mt-5 Closed projects
+      table.table.text-center.ml-5(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+            th(scope="col") 발주처
+            th(scope="col") 진행기간
+        tbody
+          each value in prj_before
             tr
-              th(scope="col") 프로젝트명
-              th(scope="col") 프로젝트 시작일
-              th(scope="col") 프로젝트 종료일
-              th(scope="col") 발주처
-          tbody
-            each value in prj_cur
-              tr
-                td=value[0]
-                td=moment(value[1]).format('YYYY-MM-DD')
-                td=moment(value[2]).format('YYYY-MM-DD')
-                td=value[3]
-    h4 완료된 프로젝트 목록
-    .row.align-items-center.mt-4
-      .col
-        table.table.text-center
-          thead
+              td
+                a(href=`/management/prj/${value[0]}`)= value[1]
+              td= value[2]
+              td #{moment(value[3]).format('YYYY-MM-DD') + ' ~ ' + moment(value[4]).format('YYYY-MM-DD')}
+    .col-sm-4
+      h2.ml-3.mt-5 Projects in progress
+      table.table.text-center.ml-3(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+            th(scope="col") 발주처
+            th(scope="col") 진행기간
+        tbody
+          each value in prj_cur
             tr
-              th(scope="col") 프로젝트명
-              th(scope="col") 프로젝트 시작일
-              th(scope="col") 프로젝트 종료일
-              th(scope="col") 발주처
-          tbody
-            each value in prj_before
-              tr
-                td=value[0]
-                td=moment(value[1]).format('YYYY-MM-DD')
-                td=moment(value[2]).format('YYYY-MM-DD')
-                td=value[3]
+              td
+                a(href=`/management/prj/${value[0]}`)= value[1]
+              td= value[2]
+              td #{moment(value[3]).format('YYYY-MM-DD') + ' ~ ' + moment(value[4]).format('YYYY-MM-DD')}
+    .col-sm-4
+      h2.mt-5 Upcomming projects
+      table.table.text-center(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+            th(scope="col") 발주처
+            th(scope="col") 진행기간
+        tbody
+          each value in prj_future
+            tr
+              td
+                a(href=`/management/prj/${value[0]}`)= value[1]
+              td= value[2]
+              td #{moment(value[3]).format('YYYY-MM-DD') + ' ~ ' + moment(value[4]).format('YYYY-MM-DD')}

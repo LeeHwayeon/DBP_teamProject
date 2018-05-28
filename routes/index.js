@@ -59,6 +59,11 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
   // 회원가입 처리
   router.post('/signUp', (req, res, next) => {
+    if (moment.duration(moment(new Date()).diff(req.body.joincompanydate)).asDays().toFixed(1) < 0) {
+      alert('입사일은 현재 날짜 이전이어야 합니다.');
+      return res.render('authentication', { state: 'beforeLogin' });
+    }
+
     connection.execute('select count(id) from (select id from management union select id from developer) where id = \'' + req.body.id + '\'', (err, result) => {
       if (err) {
         console.error(err.message);
