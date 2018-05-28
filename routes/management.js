@@ -696,20 +696,29 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     // 동료평가목록
     var projects={};
     connection.execute('SELECT DISTINCT project_num, project_name FROM project, PEER_EVALUATION WHERE project.NUM (+) = PEER_EVALUATION.PROJECT_NUM',(err,projects) =>{
-      console.log(projects)
       if(err){
         console.log(err.message);
         return;
       }  
-    
-      // 고객평가목록
-      var customers={};
-      connection.execute('select project_num, project.project_name from project, customer_evaluation where project.num = customer_evaluation.project_num', (err,customers) =>{
-        if(err){
+
+      // PM평가목록
+      var pms={};
+      connection.execute('select project_num, project.project_name from project, pm_evaluation where project.num = pm_evaluation.project_num', (err, pms) => {
+        console.log(pms)
+        if(err) {
           console.log(err.message);
           return;
         }
-        return res.render('management/evaluation', {state: 'management', projects: projects.rows, customers:customers.rows });
+    
+        // 고객평가목록
+        var customers={};
+        connection.execute('select project_num, project.project_name from project, customer_evaluation where project.num = customer_evaluation.project_num', (err,customers) =>{
+          if(err){
+            console.log(err.message);
+            return;
+          }
+        return res.render('management/evaluation', {state: 'management', projects: projects.rows, pms: pms.rows, customers:customers.rows });
+        });
       });
     });
   });
@@ -725,6 +734,20 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       }
       console.log(result);
       return res.render('management/peerEvaluationDetail', { state: 'management', result: result.rows });  
+    });
+  });
+
+  // PM평가 상세페이지
+  router.get('/pmEvaluationDetail/:id',(req, res, next) => {
+    id = req.params.id
+    console.log(id)
+    connection.execute('select * from pm_evaluation where pm_evaluation.project_num = \'' + id + '\'', (err,result) => {
+      if(err){
+        console.log(err.message);
+        return;
+      }
+      console.log(result);
+      return res.render('management/pmEvaluationDetail', { state: 'management', result: result.rows });  
     });
   });
 
