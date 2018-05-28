@@ -1,10 +1,10 @@
 extends ../layout
 
-//- 동료평가_프로젝트선택페이지
-//- 자신의 직무가 pm인 프로젝트를 제외한 프로젝트 표시
+//- PM평가_프로젝트선택페이지
+//- 자신이 PM인 프로젝트만 평가 가능함
 block content
   .container
-    form(action="/developer/peer_evaluation", method="post")
+    form(action="/developer/pm_evaluation", method="post")
       .row.mt-3
         .col.text-center
           h2 평가 할 프로젝트 선택
@@ -31,3 +31,4 @@ block content
       .row.justify-content-start.mt-4
         .col(style="margin-bottom: 1em")
           button.btn.btn-dark.mr-3(type="submit", style="float: right") 다음
+    
