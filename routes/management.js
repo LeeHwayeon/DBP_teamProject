@@ -697,8 +697,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       alert("선택된 개발자가 없습니다.");
       return res.redirect("/");
     }
-
-    connection.execute('update project_input set join_date = \'' +  req.body.join_date + '\', out_date = \'' + req.body.out_date + '\' where developer_num = \'' + req.body.developer +'\' and project_num = \'' + req.body.project_num+ '\'', (err, result) => {
+    connection.execute('update project_input set join_date = (' + 'to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')'+')' + ', out_date = (' +'to_date(\'' + req.body.out_date + '\', \'yyyy-MM-dd\')' + ')' +' where developer_num = \'' + req.body.developer +'\' and project_num = \'' + req.body.project_num+ '\'', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
