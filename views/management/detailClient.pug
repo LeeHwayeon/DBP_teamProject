@@ -2,21 +2,54 @@ extends ../layout
 
 //- 고객 상세 페이지
 block content
-  form(action="#", method="post")
-    .row.mt-3
-      .col.text-center
-        h2.text-center.mt-3 상세 정보
-    .row.align-items-center.mt-4
+  div.mr-3.ml-3
+    h1.text-center.mt-5= client[0][0]
+    h2.text-center #{'contact : ' + client[0][1]}
+    h2.ml-3.mt-5 Projects in progress
+    .row.align-items-center.mt-2
       .col
-        table.table.text-center(width="700" border="1")
-          thead
+        table.table.text-center
+          thead.thead-light
             tr
               th(scope="col") 프로젝트명
               th(scope="col") 프로젝트 시작일
               th(scope="col") 프로젝트 종료일
           tbody
-            each value in result
+            each value in prj_cur
               tr
-                td=value[0]
+                td
+                  a(href=`/management/prj/${value[3]}`)= value[0]
+                td=moment(value[1]).format('YYYY-MM-DD')
+                td=moment(value[2]).format('YYYY-MM-DD')
+    h2.ml-3.mt-5 Upcomming projects
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
+            tr
+              th(scope="col") 프로젝트명
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+          tbody
+            each value in prj_future
+              tr
+                td
+                  a(href=`/management/prj/${value[3]}`)= value[0]
+                td=moment(value[1]).format('YYYY-MM-DD')
+                td=moment(value[2]).format('YYYY-MM-DD')
+    h2.ml-3.mt-5 Closed projects
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
+            tr
+              th(scope="col") 프로젝트명
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+          tbody
+            each value in prj_before
+              tr
+                td
+                  a(href=`/management/prj/${value[3]}`)= value[0]
                 td=moment(value[1]).format('YYYY-MM-DD')
                 td=moment(value[2]).format('YYYY-MM-DD')

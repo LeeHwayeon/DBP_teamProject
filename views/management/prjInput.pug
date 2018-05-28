@@ -2,42 +2,42 @@ extends ../layout
 
 //- 프로젝트 인원 투입 페이지 : 프로젝트 선택, 개발자 선택
 block content
-  form(action="/management/configureInput", method="post")
-    .row.mt-3
-      .col.text-center
-        h2 프로젝트 인원 투입
-    .row.align-items-center.mt-4
-      .col.ml-3
-        h3.mb-3 프로젝트 선택
-        select.custom-select(name="project", size="1")
-          each project in projects
-            option(value=project[0]) #{project[1]} by #{project[2]}
-    .row.align-items-center.mt-4
-      .col
-        h3.mb-3.ml-3 개발자 선택
-        table.table
-          thead
-            tr
-              th(scope="col") 
-              th(scope="col") ID
-              th(scope="col") 이름
-              th(scope="col") 주민번호
-              th(scope="col") 최종학력
-              th(scope="col") 경력
-              th(scope="col") skill
-          tbody
-            each d in developers
+  div.mr-3.ml-3
+    .form-group
+      h1.text-center.mt-5 인원 투입
+      .row.mt-4
+        .col-sm-12
+          ul.list-group
+            li.list-group-item #{'프로젝트명 : ' + selected[0][1]}
+            li.list-group-item #{'프로젝트 시작일 : ' + moment(selected[0][2]).format('YYYY-MM-DD')}
+            li.list-group-item #{'프로젝트 종료일 : ' + moment(selected[0][3]).format('YYYY-MM-DD')}
+            li.list-group-item
+              a(href=`/management/client/${selected[0][4]}`) #{'발주처 : ' + selected[0][5]}
+    form(action="/management/configureInput", method="post")
+      input(type="hidden" name="project" value=`${selected[0][0]}`)
+      .row.align-items-center.mt-4
+        .col
+          h2.text-center.mt-5.mb-2 Select Developers
+          table.table.pull-center.table-hover(style="width: 90%; margin: auto")
+            thead.thead-light
               tr
-                td
-                  .form-check
-                    input#defaultCheck1.form-check-input(type="checkbox" name="developer" value=`${d[0]}`)
-                th(scope="row")= d[1]
-                td= d[2]
-                td= d[3]
-                td= d[4]
-                td #{moment.duration(moment(new Date()).diff(d[5])).asMonths().toFixed(2)}개월
-                td= d[6]
-    .row.justify-content-start.mt-4
-      .col(style="margin-bottom: 1em")
-        button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입 설정
-        
+                th(scope="col") 
+                th(scope="col") ID
+                th(scope="col") 이름
+                th(scope="col") 주민번호
+                th(scope="col") 경력
+                th(scope="col") skill
+            tbody
+              each d in developers
+                tr
+                  td
+                    .form-check
+                      input#defaultCheck1.form-check-input(type="checkbox" name="developer" value=`${d[0]}`)
+                  th(scope="row")= d[1]
+                  td= d[2]
+                  td= d[3]
+                  td #{moment.duration(moment(new Date()).diff(d[4])).asMonths().toFixed(2)}개월
+                  td= d[5]
+      .row.justify-content-start.mt-4
+        .col(style="margin-bottom: 1em")
+          button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입 설정

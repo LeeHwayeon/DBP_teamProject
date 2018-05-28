@@ -2,60 +2,92 @@ extends ../layout
 
 //- 직원 관리 상세 페이지
 block content
-  .row.mt-3
-    .col.text-center
-      h2.text-center.mt-3 상세 정보
-  .row.align-items-center.mt-4
-    .col
-      h3.mb-3.ml-3 선택된 개발자
-      input.form-control(type="text" name="developer" value=`${selected}` readonly)
-  h4 현재 진행중인 프로젝트
-  .row.align-items-center.mt-4
-    .col
-      table.table.text-center(width="700" border="1")
-        thead
-          tr
-            th(scope="col") 프로젝트명
-            th(scope="col") 발주처
-            th(scope="col") 프로젝트 시작일
-            th(scope="col") 프로젝트 종료일
-            th(scope="col") 직무
-            th(scope="col") 투입 일자
-            th(scope="col") 방출 일자
-            th(scope="col") 경험한 기술
-        tbody
-          each value in prj_cur
+  div.mr-3.ml-3
+    h1.text-center.mt-5= selected.name
+    .row.mt-4
+      .col-sm-4
+      .col-sm-4
+        ul.list-group
+          li.list-group-item #{'주민번호 : ' + selected.rrn}
+          li.list-group-item #{'최종학력 : ' + selected.school}
+          li.list-group-item #{'입사일 : ' + selected.join_date}
+          li.list-group-item #{'skill : ' + selected.skill}
+      .col-sm-4
+    h2.ml-3.mt-5 Projects in progress
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
             tr
-              td=value[0]
-              td=value[1]
-              td=moment(value[2]).format('YYYY-MM-DD')
-              td=moment(value[3]).format('YYYY-MM-DD')
-              td=value[4]
-              td=moment(value[5]).format('YYYY-MM-DD')
-              td=value[6]
-              td=value[7]
-  h4 완료된 프로젝트
-  .row.align-items-center.mt-4
-    .col
-      table.table.text-center(width="700" border="1")
-        thead
-          tr
-            th(scope="col") 프로젝트명
-            th(scope="col") 발주처
-            th(scope="col") 프로젝트 시작일
-            th(scope="col") 프로젝트 종료일
-            th(scope="col") 직무
-            th(scope="col") 투입 일자
-            th(scope="col") 방출 일자
-            th(scope="col") 경험한 기술
-        tbody
-          each value in prj_before
+              th(scope="col") 프로젝트명
+              th(scope="col") 발주처
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+              th(scope="col") 직무
+              th(scope="col") 투입일
+              th(scope="col") 방출일
+              th(scope="col") skill
+          tbody
+            each value in prj_cur
+              tr
+                td
+                  a(href=`/management/prj/${value[8]}`)= value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
+                td=moment(value[5]).format('YYYY-MM-DD')
+                td=value[6]
+                td=value[7]
+    h2.ml-3.mt-5 Upcomming projects
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
             tr
-              td=value[0]
-              td=value[1]
-              td=moment(value[2]).format('YYYY-MM-DD')
-              td=moment(value[3]).format('YYYY-MM-DD')
-              td=value[4]
-              td=moment(value[5]).format('YYYY-MM-DD')
-              td=value[6]
-              td=value[7]
+              th(scope="col") 프로젝트명
+              th(scope="col") 발주처
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+              th(scope="col") 직무
+              th(scope="col") 투입일
+              th(scope="col") 방출일
+              th(scope="col") skill
+          tbody
+            each value in prj_future
+              tr
+                td
+                  a(href=`/management/prj/${value[8]}`)= value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
+                td=moment(value[5]).format('YYYY-MM-DD')
+                td=value[6]
+                td=value[7]
+    h2.ml-3.mt-5 Closed projects
+    .row.align-items-center.mt-2
+      .col
+        table.table.text-center
+          thead.thead-light
+            tr
+              th(scope="col") 프로젝트명
+              th(scope="col") 발주처
+              th(scope="col") 프로젝트 시작일
+              th(scope="col") 프로젝트 종료일
+              th(scope="col") 직무
+              th(scope="col") 투입일
+              th(scope="col") 방출일
+              th(scope="col") skill
+          tbody
+            each value in prj_before
+              tr
+                td
+                  a(href=`/management/prj/${value[8]}`)= value[0]
+                td=value[1]
+                td=moment(value[2]).format('YYYY-MM-DD')
+                td=moment(value[3]).format('YYYY-MM-DD')
+                td=value[4]
+                td=moment(value[5]).format('YYYY-MM-DD')
+                td=value[6]
+                td=value[7]
