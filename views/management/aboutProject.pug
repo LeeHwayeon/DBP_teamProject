@@ -3,16 +3,14 @@ extends ../layout
 //- 프로젝트 관리 페이지
 block content
   h1.text-center.mt-5 Project
-  //- 이부분 안맞을 수 있음!
-  h4 프로젝트 검색
-    form(action='/management/showProject', method='post')
-      .input-group.mb-3
-        input.form-control(type="text" name="project" placeholder="input project name!")
-        .input-group-append
-          button.btn.btn-dark(type="submit") 프로젝트 검색
-  //- 이부분 안맞을 수 있음!
-  button.btn.btn-outline-dark.mr-5(type="button" onclick="location.href='addProject'", style="float: right") 추가
-  .row.mt-5
+  .row.float-right
+    button.btn.btn-dark.mr-3(type="button" onclick="location.href='addProject'", style="float: left") 추가
+    nav.navbar.navbar-light(style="padding: 0").mr-5
+      form.form-inline(action='/management/showProject', method='post')
+        input.form-control.mr-sm-2(type="text" name="project" placeholder="project name" aria-label="Search")
+        button.btn.btn-outline-secondary.my-2.my-sm-0(type="submit") 검색
+    
+  .row.mt-5.mr-0
     .col-sm-4
       h2.ml-5.mt-5 Closed projects
       table.table.text-center.ml-5(style="width: 90%;")

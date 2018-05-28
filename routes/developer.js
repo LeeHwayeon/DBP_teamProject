@@ -127,13 +127,14 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     console.log(req.body.project);
     console.log(req.body.evaluated);
     connection.execute('select project.num,project.project_name,developer.id from project,developer,project_input where project.project_name=\''+ req.body.project +'\' and project.num=project_input.project_num and developer.id=\''+req.body.evaluated+'\' and developer.num=project_input.developer_num', (err, selectedP) => {
-      console.log(selectedP);
+      console.log(selectedP.rows);
       if(err){
         console.error(err.message);
         return;
       }
       //선택된 프로젝트 정보 가져옴
       var selected = '프로젝트 이름 : '+selectedP.rows[0][1] +'개발자 이름:'+selectedP.rows[0][2];
+      console.log(selected);
       //선택된 프로젝트에서 로그인한 사용자의 직무를 select
       // connection.execute('select project_input.role_in_project from project_input,project,developer where project.project_name=\''+req.body.project+'\' and project.num=project_input.project_num and developer.id=\''+req.session.user.ID+'\' and developer.num=project_input.developer_num', (err, result) => {
       //   console.log(result);
@@ -141,7 +142,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         // if(result.rows === 'PM'){
         //   connection.execute('select * from pm_evaluation,project where project_name=\''+req.body.project+'\' and project.num=pm_evaluation.project_num', (err, result) => {
         //     if(result.rows.length === 0){
-              connection.execute('insert into pm_evaluation values ((select num from project where project_name=\''+ req.body.project +'\'), (select num from developer where id=\''+req.session.user.ID+'\'), (select num from developer where id=\''+req.body.evaluated+'\'),'+req.body.work_score+',\''+req.body.work_content+'\','+req.body.communication_score +',\''+req.body.communication_content+'\')', (err, result) => {
+              connection.execute('insert into pm_evaluation(project_num, evaluator, evaluated, work_score, work_content, communication_score, communication_content) values (\'(select num from project where project_name=\''+ req.body.project +'\')\', \'(select num from developer where id=\''+req.session.user.ID+'\')\', \'(select num from developer where id=\''+req.body.evaluated+'\')\', ' + req.body.work_score + ', \''+req.body.work_content+'\', ' + req.body.communication_score + ',\' ' + req.body.communication_content + '\')', (err, result) => {
                 if(err){
                   console.error(err.message);
                   return;
