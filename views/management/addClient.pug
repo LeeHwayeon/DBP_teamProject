@@ -3,18 +3,16 @@ extends ../layout
 //- 고객 추가
 block content
   form(action="/management/addClient", method="post")
+    h1.text-center.mt-5 Add Client
     .form-group
-      .row.mt-3
-        .col.text-center
-          h2 고객 추가
       .row.align-items-center
         .col.mt-4
-          h3 고객명
+          h2 Name
           input.form-control(type="text", placeholder="client name", name="name" required)
       .row.align-items-center.mt-4
         .col
-          h3 연락처
+          h2 Contact
           input.form-control(type="text", placeholder="contact", name="contact" required)
       .row.justify-content-start.mt-4
         .col(style="margin-bottom: 1em")
-          button.btn.btn-dark(type="submit", style="float: right") Add client
+          button.btn.btn-outline-dark(type="submit", style="float: right") 등록

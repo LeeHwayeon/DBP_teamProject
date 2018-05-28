@@ -3,28 +3,26 @@ extends ../layout
 //- 프로젝트 등록 페이지
 block content
   form(action="/management/addProject", method="post")
+    h1.text-center.mt-5 Add Project
     .form-group
-      .row.mt-3
-        .col.text-center
-          h2 프로젝트 추가
       .row.align-items-center
         .col.mt-4
-          h3 프로젝트명
+          h2 Name
           input.form-control(type="text", placeholder="project name", name="name")
       .row.align-items-center.mt-4
         .col
-          h3 착수일
+          h2 Start Date
           input.form-control(type="date", placeholder="starts", name="begin_date")
       .row.align-items-center.mt-4
         .col
-          h3 종료일
+          h2 End Date
           input.form-control(type="date", placeholder="ends", name="end_date")
       .row.align-items-center.mt-4
         .col
-          h3 발주처
+          h2 Ordered
           select.custom-select(name="client", size="1")
             each client in clients
               option(value=client[0]) #{client[1]}(#{client[0]})
       .row.justify-content-start.mt-4
         .col(style="margin-bottom: 1em")
-          button.btn.btn-dark(type="submit", style="float: right") Add project
+          button.btn.btn-outline-dark(type="submit", style="float: right") Add project

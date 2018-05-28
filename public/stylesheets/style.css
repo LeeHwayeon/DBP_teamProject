@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=PT+Sans:700');
+
 body {
     font-family: 'Nanum Gothic', sans-serif !important;
 }
@@ -76,4 +78,7 @@ body {
     text-align: center;
     padding-top: 50px;
     padding-bottom: 50px;
+
+h1, h2 {
+    font-family: 'PT Sans', sans-serif !important;
 }

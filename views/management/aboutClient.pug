@@ -4,11 +4,11 @@ extends ../layout
 block content
   div.mr-3.ml-3
     .form-group
-      h2.text-center.mt-3 고객 관리
-      button.btn.btn-outline-primary(type="button" onclick="location.href='addClient'") 추가
+      h1.text-center.mt-5 Client
+      button.btn.btn-outline-dark.pull-right.mb-3.mt-4(type="button" onclick="location.href='addClient'") 추가
       div.mt-3
         table.table.text-center
-          thead
+          thead.thead-light
             tr
               th(scope="col") 고객명
               th(scope="col") 연락처

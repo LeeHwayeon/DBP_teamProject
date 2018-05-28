@@ -2,46 +2,50 @@ extends ../layout
 
 //- 프로젝트 인원 투입 페이지 : 역할, 합류일 선택
 block content
-  form(action="/management/addProjectInput", method="post")
-    .row.mt-3
-      .col.text-center
-        h2 프로젝트 인원 투입
-    .row.align-items-center.mt-4
-      .col
-        h3.mb-3.ml-3 선택된 프로젝트
-        input.form-control(type="text" name="project" value=`${selected}` readonly)
-        input(type="hidden" name="project_num" value=`${project_num}`)
-    .row.align-items-center.mt-4
-      .col
-        h3.mb-3.ml-3 개발자별 해당 프로젝트 투입일, 역할 선택
-        table.table
-          thead
-            tr
-              th(scope="col") ID
-              th(scope="col") 이름
-              th(scope="col") 투입일 선택
-              th(scope="col") 경험할 skill
-              th(scope="col") 역할 선택
-          tbody
-            each d in developer
-              input(type="hidden" name="developer_num" value=`${d[0]}`)
+  div.mr-3.ml-3
+    .form-group
+      h1.text-center.mt-5 인원 투입
+      .row.mt-4
+        .col-sm-12
+          ul.list-group
+            li.list-group-item #{'프로젝트명 : ' + selected[0][1]}
+            li.list-group-item #{'프로젝트 시작일 : ' + moment(selected[0][2]).format('YYYY-MM-DD')}
+            li.list-group-item #{'프로젝트 종료일 : ' + moment(selected[0][3]).format('YYYY-MM-DD')}
+            li.list-group-item
+              a(href=`/management/client/${selected[0][4]}`) #{'발주처 : ' + selected[0][5]}
+    form(action="/management/addProjectInput", method="post")
+      input(type="hidden" name="project_num" value=`${selected[0][0]}`)
+      .row.align-items-center.mt-4
+        .col
+          h2.text-center.mt-5.mb-2 개발자별 투입일, skill, 역할 선택
+          table.table.pull-center(style="width: 90%; margin: auto")
+            thead.thead-light
               tr
-                th(scope="row")= d[1]
-                td= d[2]
-                td
-                  input.form-control(type="date" name='join_date')
-                td
-                  input.form-control(type="text" name="skill")
-                td
-                  select.custom-select(name="role", size="1")
-                    option(value='pl') PL
-                    option(value='analyst') Analyst
-                    option(value='planner') Planner
-                    option(value='programmer') Programmer
-                    option(value='tester') Tester
-    .row.justify-content-start.mt-4
-      .col(style="margin-bottom: 1em")
-        button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입
-    
+                th(scope="col") ID
+                th(scope="col") 이름
+                th(scope="col") 투입일 선택
+                th(scope="col") 경험할 skill
+                th(scope="col") 역할 선택
+            tbody
+              each d in developer
+                input(type="hidden" name="developer_num" value=`${d[0]}`)
+                tr
+                  th(scope="row")= d[1]
+                  td= d[2]
+                  td
+                    input.form-control(type="date" name='join_date')
+                  td
+                    input.form-control(type="text" name="skill")
+                  td
+                    select.custom-select(name="role", size="1")
+                      option(value='pl') PL
+                      option(value='analyst') Analyst
+                      option(value='planner') Planner
+                      option(value='programmer') Programmer
+                      option(value='tester') Tester
+      .row.justify-content-start.mt-4
+        .col(style="margin-bottom: 1em")
+          button.btn.btn-dark.mr-3(type="submit", style="float: right") 투입
+      
 
-    
+      
