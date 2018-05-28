@@ -142,6 +142,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // 마이페이지
   router.get('/mypage', (req, res, next) => {
     user = req.session.user;
+    console.log(user['job']);
     res.render('mypage', { state: user['job'], user: user });
   });
 

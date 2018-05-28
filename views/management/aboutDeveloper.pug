@@ -2,6 +2,7 @@ extends ../layout
 
 //- 직원 관리 페이지(경영진)
 block content
+
   h1.text-center.mt-5 Employee
   //- 직원 검색
   div.float-right
@@ -34,4 +35,3 @@ block content
               td= d[1]
               td #{moment.duration(moment(new Date()).diff(d[2])).asMonths().toFixed(1)}개월
       button.btn.btn-outline-primary.mr-3.mb-2(type="submit", style="float: right !important") 선택삭제
-  
