@@ -2,17 +2,15 @@ extends ../layout
 
 block content
     .container
-        form(action="/developer/selectEvaluated",method="post")
+        form(action="/developer/peer_evaluation",method="post")
             .row.align-items-center.mt-4
                 .col
                     h3.mb-3.ml-3 선택된 프로젝트
                     input.form-control(type="text" name="project" value=`${selected}` readonly)
-            .row.align-items-center.mt-2
+            .row.align-items-center.mt-4
                 .col
                     h3.mb-3.ml-3 평가 할 개발자 선택
-                        br
-                        br
-                        table.table.text-center
+                        table.table
                             thead
                                 tr
                                     th(scope="col") 
@@ -24,19 +22,6 @@ block content
                                             .form-check
                                                 input#defaultRadio1.form-radio-input(type="radio" name="evaluated" value=`${d[0]}`)
                                         td= d[0]
-            h3.mb-3.ml-3 평가 내용 입력
-            .form-group
-                label(for="inputWorkScore") Work Score
-                input#inputworkscore.form-control(type="number" name="work_score" min="0" max="100" placeholder="0~100점")
-            .form-group
-                label(for="inputWorkContent") Work content
-                input#inputworkcontent.form-control(type="text" name="work_content" placeholder="ex) 프로젝트 이해도 높음 ..")
-            .form-group
-                label(for="inputCommunicationScore") Communication Score
-                input#inputcommunicationscore.form-control(type="number" name="communication_score" min="0" max="100" placeholder="0~100점")
-            .form-group
-                label(for="inputCommunicationContent") Communication content
-                input#inputcommunicationcontent.form-control(type="text" name="communication_content" placeholder="ex) 프로젝트 멤버들 간의 소통 및 관계")
             .row.justify-content-start.mt-4
                 .col(style="margin-bottom: 1em")
                     button.btn.btn-dark.mr-3(type="submit", style="float: right") 평가
