@@ -2,25 +2,24 @@ extends ../layout
 
 //- 고객평가 세부정보
 block content
-  form(action="/customerEvaluationDetail", method="post")
-  h4.h4.text-center 고객 평가 상세 내용
-  br
-  table.table.text-center
-    thead
-      tr
-        th(scope="col") Project Number
-        th(scope="col") Evaluator
-        th(scope="col") Evaluated
-        th(scope="col") Work Score
-        th(scope="col") Work Content
-        th(scope="col") Communication Score
-        th(scope="col") Communication Content
-    tbody
-      tr
-          td #{result[0][0]}
-          td #{result[0][1]}
-          td #{result[0][2]}
-          td #{result[0][3]}
-          td #{result[0][4]}
-          td #{result[0][5]}
-          td #{result[0][6]}
+  h1.text-center.mt-5 #{result[0][0]}
+  h4.text-center.mb-5 #{moment(result[0][1]).format('YYYY-MM-DD')} ~ #{moment(result[0][2]).format('YYYY-MM-DD')}
+  form(action="/peerEvaluationDetail", method="post")
+    table.table.pull-center.table-hover.text-center(style="width: 90%; margin: auto")
+      thead.thead-light
+        tr
+          th(scope="col") 평가자
+          th(scope="col") 피평가자
+          th(scope="col") 업무수행평가 점수
+          th(scope="col") 업무수행평가 내용
+          th(scope="col") 커뮤니케이션능력평가 점수
+          th(scope="col") 커뮤니케이션능력평가 내용
+      tbody
+        each val, index in evaluators_name
+          tr
+            td #{val}
+            td #{evaluateds_name[index]}
+            td #{result[index][3]}
+            td #{result[index][4]}
+            td #{result[index][5]}
+            td #{result[index][6]}

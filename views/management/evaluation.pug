@@ -2,35 +2,38 @@ extends ../layout
 
 //- 평가조회
 block content
-    .container
-        h3.text-center 평가조회
-        br
-        p.peer-evaluation
-            | 동료
-        p.project-name 프로젝트 이름
-        hr
-        .col.text-center
-            -for(let i = 0; i < projects.length; i++) {
-                a(href=`/management/peerEvaluationDetail/${projects[i][0]}`)
-                    p #{projects[i][1]}
-            -}
-
-        p.pm-evaluation
-            | PM 평가
-        p.project-name 프로젝트 이름
-        hr
-        .col.text-center
-            -for(let i = 0; i < pms.length; i++) {
-                a(href=`/management/pmEvaluationDetail/${pms[i][0]}`)
-                    p #{pms[i][1]}
-            -}
-
-        p.customer-evaluation
-            | 고객 평가
-        p.project-name 프로젝트 이름
-        hr
-        .col.text-center
-            -for(let i = 0; i < customers.length; i++) {
-                a(href=`/management/customerEvaluationDetail/${customers[i][0]}`)
-                    p #{customers[i][1]}
-            -}
+  h1.text-center.mt-5 Evaluation
+  .row.mt-5.mr-0
+    .col-sm-4
+      h2.ml-5.mt-5 동료평가
+      table.table.text-center.ml-5(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+        tbody
+          each p1 in projects
+            tr
+              td
+                a(href=`/management/peerEvaluationDetail/${p1[0]}`)= p1[1]
+    .col-sm-4
+      h2.ml-5.mt-5 PM평가
+      table.table.text-center.ml-5(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+        tbody
+          each p2 in pms
+            tr
+              td
+                a(href=`/management/pmEvaluationDetail/${p2[0]}`)= p2[1]
+    .col-sm-4
+      h2.ml-5.mt-5 고객평가
+      table.table.text-center.ml-5(style="width: 90%;")
+        thead.thead-light
+          tr
+            th(scope="col") 프로젝트명
+        tbody
+          each p3 in customers
+            tr
+              td
+                a(href=`/management/customerEvaluationDetail/${p3[0]}`)= p3[1]

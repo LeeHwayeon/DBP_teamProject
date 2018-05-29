@@ -728,77 +728,195 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     7. 평가조회
   */
   // 평가조회 페이지
-  router.get('/evaluation',(req, res, next) => {
+  router.get('/evaluation', (req, res, next) => {
+    function make_query(tb) {
+      return 'select distinct p.num, p.project_name from project p, client c, ' + tb + ' e where p.order_customer = c.NUM and e.PROJECT_NUM = p.num';
+    }
+    
     // 동료평가목록
-    var projects={};
-    connection.execute('SELECT DISTINCT project_num, project_name FROM project, PEER_EVALUATION WHERE project.NUM (+) = PEER_EVALUATION.PROJECT_NUM',(err,projects) =>{
-      if(err){
-        console.log(err.message);
+    connection.execute(make_query('peer_evaluation'), (err, projects) => {
+      if (err) {
+        console.error(err.message);
         return;
-      }  
-
+      }    
       // PM평가목록
-      var pms={};
-      connection.execute('select project_num, project.project_name from project, pm_evaluation where project.num = pm_evaluation.project_num', (err, pms) => {
-        console.log(pms)
-        if(err) {
-          console.log(err.message);
+      connection.execute(make_query('pm_evaluation'), (err, pms) => {
+        if (err) {
+          console.error(err.message);
           return;
         }
-    
         // 고객평가목록
-        var customers={};
-        connection.execute('select project_num, project.project_name from project, customer_evaluation where project.num = customer_evaluation.project_num', (err,customers) =>{
-          if(err){
-            console.log(err.message);
+        connection.execute(make_query('customer_evaluation'), (err,customers) => {
+          if (err) {
+            console.error(err.message);
             return;
           }
-        return res.render('management/evaluation', {state: 'management', projects: projects.rows, pms: pms.rows, customers:customers.rows });
+
+          res.render('management/evaluation', { state: 'management', projects: projects.rows, pms: pms.rows, customers:customers.rows });
         });
       });
     });
   });
 
   // 동료평가 상세페이지
-  router.get('/peerEvaluationDetail/:id',(req, res, next) => {
-    id = req.params.id
-    console.log(id)
-    connection.execute('select * from peer_evaluation where peer_evaluation.project_num = \'' + id + '\'', (err,result) => {
-      if(err){
-        console.log(err.message);
+  router.get('/peerEvaluationDetail/:id', (req, res, next) => {
+    var pId = req.params.id;
+
+    // 해당 프로젝트의 동료평가 정보를 다 가져옴
+    connection.execute('select * from peer_evaluation where project_num = ' + pId + '', (err, allPeerEval) => {
+      if (err) {
+        console.error(err.message);
         return;
       }
-      console.log(result);
-      return res.render('management/peerEvaluationDetail', { state: 'management', result: result.rows });  
+      
+      var evaluators_num = [];
+      var evaluateds_num = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        evaluators_num.push(allPeerEval.rows[i][1]);
+        evaluateds_num.push(allPeerEval.rows[i][2]);
+      }
+
+      var evaluators_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select user_name from developer where num = ' + evaluators_num[i] + '', (err, evaluator) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluators_name.push(evaluator.rows[0][0]);
+        });
+      }
+
+      var evaluateds_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select user_name from developer where num = ' + evaluateds_num[i] + '', (err, evaluated) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluateds_name.push(evaluated.rows[0][0]);
+        });
+      }
+
+      connection.execute('select project_name, begin_date, end_date, work_score, work_content, communication_score, communication_content from peer_evaluation pe, project p where p.num = pe.project_num and project_num = ' + pId + '', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+
+        return res.render('management/peerEvaluationDetail', { state: 'management', result: result.rows, evaluators_name, evaluateds_name });
+      });
     });
   });
 
   // PM평가 상세페이지
-  router.get('/pmEvaluationDetail/:id',(req, res, next) => {
-    id = req.params.id
-    console.log(id)
-    connection.execute('select * from pm_evaluation where pm_evaluation.project_num = \'' + id + '\'', (err,result) => {
-      if(err){
-        console.log(err.message);
+  router.get('/pmEvaluationDetail/:id', (req, res, next) => {
+    var pId = req.params.id;
+
+    // 해당 프로젝트의 PM평가 정보를 다 가져옴
+    connection.execute('select * from pm_evaluation where project_num = ' + pId + '', (err, allPeerEval) => {
+      if (err) {
+        console.error(err.message);
         return;
       }
-      console.log(result);
-      return res.render('management/pmEvaluationDetail', { state: 'management', result: result.rows });  
+
+      var evaluators_num = [];
+      var evaluateds_num = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        evaluators_num.push(allPeerEval.rows[i][1]);
+        evaluateds_num.push(allPeerEval.rows[i][2]);
+      }
+
+      var evaluators_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select user_name from developer where num = ' + evaluators_num[i] + '', (err, evaluator) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluators_name.push(evaluator.rows[0][0]);
+        });
+      }
+
+      var evaluateds_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select user_name from developer where num = ' + evaluateds_num[i] + '', (err, evaluated) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluateds_name.push(evaluated.rows[0][0]);
+        });
+      }
+
+      connection.execute('select project_name, begin_date, end_date, work_score, work_content, communication_score, communication_content from pm_evaluation pe, project p where p.num = pe.project_num and project_num = ' + pId + '', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+
+        return res.render('management/pmEvaluationDetail', { state: 'management', result: result.rows, evaluators_name, evaluateds_name });
+      });
     });
   });
 
   // 고객평가 상세페이지
   router.get('/customerEvaluationDetail/:id', (req, res, next) => {
-    id = req.params.id
-    console.log(id)
-    connection.execute('select * from customer_evaluation where customer_evaluation.project_num = \'' + id + '\'', (err,result) => {
-      if(err){
-        console.log(err.message);
+    var pId = req.params.id;
+
+    // 해당 프로젝트의 고객평가 정보를 다 가져옴
+    connection.execute('select * from customer_evaluation where project_num = ' + pId + '', (err, allPeerEval) => {
+      if (err) {
+        console.error(err.message);
         return;
       }
-      console.log(result);
-      return res.render('management/customerEvaluationDetail', { state: 'management', result: result.rows });  
+      
+      var evaluators_num = [];
+      var evaluateds_num = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        evaluators_num.push(allPeerEval.rows[i][1]);
+        evaluateds_num.push(allPeerEval.rows[i][2]);
+      }
+
+      var evaluators_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select client_name from client where num = ' + evaluators_num[i] + '', (err, evaluator) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluators_name.push(evaluator.rows[0][0]);
+        });
+      }
+
+      var evaluateds_name = [];
+      for (let i = 0; i < allPeerEval.rows.length; i++) {
+        connection.execute('select user_name from developer where num = ' + evaluateds_num[i] + '', (err, evaluated) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          evaluateds_name.push(evaluated.rows[0][0]);
+        });
+      }
+
+      connection.execute('select project_name, begin_date, end_date, work_score, work_content, communication_score, communication_content from customer_evaluation pe, project p where p.num = pe.project_num and project_num = ' + pId + '', (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return;
+        }
+
+        return res.render('management/customerEvaluationDetail', { state: 'management', result: result.rows, evaluators_name, evaluateds_name });
+      });
     });
+
+    // connection.execute('select * from customer_evaluation where customer_evaluation.project_num = \'' + id + '\'', (err,result) => {
+    //   if (err) {
+    //     console.log(err.message);
+    //     return;
+    //   }
+    //   return res.render('management/customerEvaluationDetail', { state: 'management', result: result.rows });  
+    // });
   });
 });
 
