@@ -37,8 +37,8 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // 고객평가
   // 페이지 이동
   router.get('/aboutCustomerEvaluation', (req, res, next) => {
-    //자신이 PM인 프로젝트만 보여줌
-    connection.execute('select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\'', (err, result) => {
+    //자신이 PM이면서 완료된 프로젝트만 보여줌
+    connection.execute('select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\' and project.END_DATE < trunc(sysdate)', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
@@ -83,8 +83,8 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // 평가 프로젝트 선택 페이지
   router.get('/aboutPeerEvaluation', (req, res, next) =>{
     var projects={};
-    //로그인 한 사용자가 속해있는 프로젝트 목록을 가져온다.
-    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project,project_input,developer,client where project.order_customer=client.num and developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num MINUS select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\'', (err,result) => {
+    // 로그인 한 사용자가 속해있으면서 완료된 프로젝트 목록을 가져온다.
+    connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project,project_input,developer,client where project.order_customer=client.num and developer.id=\''+ req.session.user.ID +'\' and developer.num=project_input.developer_num and project_input.project_num=project.num MINUS select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\' and project.END_DATE < trunc(sysdate)', (err,result) => {
       if(err){
         console.error(err.message);
         return;
@@ -128,8 +128,8 @@ oracledb.getConnection(dbConfig, (err, connection) => {
   // PM평가
   // 평가 프로젝트 선택 페이지
   router.get('/aboutPMEvaluation', (req, res, next) =>{
-    //자신이 PM인 프로젝트만 보여줌
-    connection.execute('select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\'', (err, result) => {
+    //자신이 PM이면서 완료된 프로젝트만 보여줌
+    connection.execute('select project.num, project_name, begin_date, end_date, client_name from client, project, PM, developer where client.num = project.order_customer and project.num = PM.PROJECT_NUM and PM.DEVELOPER_NUM = developer.NUM and id = \'' + req.session.user.ID + '\' and project.END_DATE < trunc(sysdate)', (err, result) => {
       if (err) {
         console.error(err.message);
         return;

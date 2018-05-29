@@ -368,8 +368,8 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       return res.redirect("/management/prj/" + prj);
     }
     
-    // TODO: 날짜처리
     // PK가 개발자번호 + 플젝번호라 이미 다른 직무를 맡고있는 경우 인풋테이블에 PM으로 못들어감.
+    var date_condition3 = 'BEGIN_DATE > trunc(sysdate) and END_DATE > trunc(sysdate)';
     connection.execute('select count(*) from project_input where project_num = ' + prj + ' and developer_num = ' + dev, (err, pi_flag) => {
       if (err) {
         console.error(err.message);
@@ -377,57 +377,70 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       }
 
       if (pi_flag.rows[0][0] === 1) {
-        alert('이미 다른 직무를 맡고 있어 PM 설정이 불가능합니다.');
+        alert('이미 해당 프로젝트에서 다른 직무를 맡고 있어 PM 설정이 불가능합니다.');
         return res.redirect("/management/prj/" + prj);
       }
 
-      connection.execute('select count(*) from pm where project_num = \'' + prj + '\'', (err, pm_flag) => {
+      // 프로젝트 종료 이후 시점에는 PM 투입 불가능
+      connection.execute('select end_date from project where num = ' + prj + '', (err, isEnd) => {
         if (err) {
           console.error(err.message);
           return;
-        }  
-        if (pm_flag.rows[0][0] === 0) {
-          // insert
-          connection.execute('insert into pm(developer_num, project_num) values(' + dev + ', ' + prj + ')', (err, result) => {
-            if (err) {
-              console.error(err.message);
-              return;
-            }
-            // input테이블에도 pm을 넣어야 하는가? -> 이 사람에 관련된 프로젝트 정보 조회 위해.
-            connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + prj + ', ' + dev + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
+        }
+
+        if (moment.duration(moment(isEnd.rows[0][0]).diff(req.body.join_date)).asDays().toFixed(1) < 0) {
+          alert('종료된 프로젝트에는 PM투입이 불가능합니다.');
+          return res.redirect("/management/prj/" + prj);
+        }
+
+        connection.execute('select count(*) from pm where project_num = \'' + prj + '\'', (err, pm_flag) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }  
+          if (pm_flag.rows[0][0] === 0) {
+            // insert
+            connection.execute('insert into pm(developer_num, project_num) values(' + dev + ', ' + prj + ')', (err, result) => {
               if (err) {
                 console.error(err.message);
                 return;
               }
-              alert("PM이 등록되었습니다.");
-              return res.redirect('/management/prj/' + prj);
-            });
-          });
-        } else {
-          // update
-          connection.execute('select developer_num from pm where project_num = ' + prj, (err, before) => {
-            if (err) {
-              console.error(err.message);
-              return;
-            }
-            connection.execute('update pm set developer_num = \'' + dev + '\' where project_num = \'' + prj + '\'', (err, result) => {
-              if (err) {
-                console.error(err.message);
-                return;
-              }
-              
-              // 이전 개발자 번호..?
-              connection.execute('update project_input set developer_num = ' + dev + ' where project_num = ' + prj + ' and developer_num = ' + before.rows[0][0] + '', (err, result) => {
+              // input테이블에도 pm을 넣어야 하는가? -> 이 사람에 관련된 프로젝트 정보 조회 위해.
+              connection.execute('insert into project_input(project_num, developer_num, role_in_project, join_date, out_date, skill) values(' + prj + ', ' + dev + ', ' + '\'pm\', to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\'), null, null)', (err, result) => {
                 if (err) {
                   console.error(err.message);
                   return;
                 }
-                alert("PM이 변경되었습니다.");
+                alert("PM이 등록되었습니다.");
                 return res.redirect('/management/prj/' + prj);
               });
             });
-          });
-        }
+          } else {
+            // update
+            connection.execute('select developer_num from pm where project_num = ' + prj, (err, before) => {
+              if (err) {
+                console.error(err.message);
+                return;
+              }
+              connection.execute('update pm set developer_num = \'' + dev + '\' where project_num = \'' + prj + '\'', (err, result) => {
+                if (err) {
+                  console.error(err.message);
+                  return;
+                }
+                
+                // 이전 개발자 번호..?
+                connection.execute('update project_input set developer_num = ' + dev + ' where project_num = ' + prj + ' and developer_num = ' + before.rows[0][0] + '', (err, result) => {
+                  if (err) {
+                    console.error(err.message);
+                    return;
+                  }
+                  alert("PM이 변경되었습니다.");
+                  return res.redirect('/management/prj/' + prj);
+                });
+              });
+            });
+          }
+        });
       });
     });
   });
