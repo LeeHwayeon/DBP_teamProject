@@ -287,7 +287,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-  // 프로젝트 상세페이지로 이동
+  // 프로젝트 상세 페이지로 이동
   router.get('/prj/:id', (req, res, next) => {
     connection.execute('select p.project_name, p.begin_date, p.end_date, c.num as client_num, c.client_name, p.num from project p, client c where c.num = p.order_customer and p.num = \'' + req.params.id + '\'', (err, result) => {
       if (err) {
@@ -306,7 +306,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
             console.error(err.message);
             return;
           }
-          res.render('management/aboutProjectDetail', { state: 'management', result: result.rows, pi: pi_result.rows, pm: pm_result.rows });
+          res.render('management/aboutProjectDetail', { state: 'management', result: result.rows, pi: pi_result.rows, pm: pm_result.rows, pNum: req.params.id });
         })
       });
     });
@@ -663,60 +663,42 @@ oracledb.getConnection(dbConfig, (err, connection) => {
     });
   });
 
-
-
-
-
-  /* 
-    6. 개발자 투입 방출(이후 프로젝트 관리랑 병합 예정)
-  */
-  // 페이지 이동
-  router.get('/inAndOut', (req, res, next) => {
-    // 진행중인 프로젝트만 보여줌_프로젝트가 진행중일때만 개발자의 투입방출일자를 수정하도록
-    connection.execute('select project.num, project_name, begin_date, end_date, client_name from project, client where client.num = project.order_customer and BEGIN_DATE <= trunc(sysdate) and END_DATE >= trunc(sysdate)', (err, projects) => {
+  // 개발자 방출 정보 입력받는 페이지로 이동
+  router.get('/outToPrj/:pNum/:dId', (req, res, next) => {
+    connection.execute('select project_name from project', (err, result) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      res.render('management/inAndOut', { state: 'management', projects: projects.rows });
+      res.render('management/outToPrj', { state: 'management', pNum: req.params.pNum, dId: req.params.dId, pName: result.rows[0][0] })
     });
   });
 
-  // 투입,방출일자를 수정하고 싶은 개발자 선택
-  router.post('/appointToModify', (req, res, next) => {
-    if (req.body.prj === undefined) {
-      alert("선택된 프로젝트가 없습니다.");
-      return res.redirect("back");
-    }
-    connection.execute('select num, id, user_name, join_date, out_date from project_input, developer where developer.num (+)= project_input.developer_num and project_input.project_num = ' +  req.body.prj + '' , (err, developers) => {
+  // 개발자 방출 처리
+  router.post('/outToPrj/:pNum/:dId', (req, res, next) => {
+    connection.execute('select begin_date, end_date from project where num = ' + req.params.pNum + '', (err, dateResult) => {
       if (err) {
         console.error(err.message);
         return;
       }
-      connection.execute('select project.num, project.project_name, project.begin_date, project.end_date, client.client_name from project, client where project.order_customer = client.num and project.num = ' + req.body.prj + '', (err, selectedPrj) => {
-        if (err) {
-          console.error(err.message);
-          return;
-        }
-        var selected = '프로젝트명 : ' + selectedPrj.rows[0][1] + ', 착수일자 : ' + moment(selectedPrj.rows[0][2]).format('YYYY-MM-DD') + ', 종료일자: ' + moment(selectedPrj.rows[0][3]).format('YYYY-MM-DD') + ', 발주처 : ' + selectedPrj.rows[0][4];
-        res.render('management/appointToModify', { state: 'management', developer: developers.rows, project_num: req.body.prj, selected });
-      });
-    });
-  });
 
-  // 투입,방출일자 수정 처리
-  router.post('/modifiedInAndOut', (req, res, next) => {
-    if (req.body.developer === undefined) {
-      alert("선택된 개발자가 없습니다.");
-      return res.redirect("/");
-    }
-    connection.execute('update project_input set join_date = (' + 'to_date(\'' + req.body.join_date + '\', \'yyyy-MM-dd\')'+')' + ', out_date = (' +'to_date(\'' + req.body.out_date + '\', \'yyyy-MM-dd\')' + ')' +' where developer_num = \'' + req.body.developer +'\' and project_num = \'' + req.body.project_num+ '\'', (err, result) => {
-      if (err) {
-        console.error(err.message);
-        return;
+      // 방출일 : 프로젝트 기간중이어야함
+      if (moment.duration(moment(req.body.out_date).diff(dateResult.rows[0][0])).asDays().toFixed(1) >= 0
+      && moment.duration(moment(req.body.out_date).diff(dateResult.rows[0][1])).asDays().toFixed(1) <= 0) {
+        var query = 'update project_input set out_date = to_date(\'' + req.body.out_date + '\', \'yyyy-MM-dd\') where project_num = ' + req.params.pNum + ' and developer_num = (select d.num from project_input pi, developer d where pi.developer_num = d.num and d.id = \'' + req.params.dId + '\' and rownum = 1)';
+
+        connection.execute(query, (err, result) => {
+          if (err) {
+            console.error(err.message);
+            return;
+          }
+          alert('방출되었습니다.');
+          return res.redirect('/management/aboutProject');
+        });
+      } else {
+        alert('프로젝트 기간 이전 혹은 이후에 방출할 수 없습니다.');
+        res.redirect('/management/aboutProject');
       }
-      alert("수정완료");
-      res.render('index', { state: 'management' });
     });
   });
 
@@ -909,14 +891,6 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         return res.render('management/customerEvaluationDetail', { state: 'management', result: result.rows, evaluators_name, evaluateds_name });
       });
     });
-
-    // connection.execute('select * from customer_evaluation where customer_evaluation.project_num = \'' + id + '\'', (err,result) => {
-    //   if (err) {
-    //     console.log(err.message);
-    //     return;
-    //   }
-    //   return res.render('management/customerEvaluationDetail', { state: 'management', result: result.rows });  
-    // });
   });
 });
 

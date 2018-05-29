@@ -38,11 +38,14 @@ block content
                   a(href=`/management/detail/${value[0]}`)= value[1]
                 td=value[2]
                 td=moment(value[3]).format('YYYY-MM-DD')
-                td=moment(value[4]).format('YYYY-MM-DD')
+                if value[4] === null
+                  td(style="float: center")
+                    button.btn.btn-outline-dark(type="button" onclick=`location.href='/management/outToPrj/${pNum}/${value[0]}/'`) 방출하기
+                else
+                  td=moment(value[4]).format('YYYY-MM-DD')
                 td=value[5]
               //- TODO: 평가 관련 정보
     .row.justify-content-start
       .col(style="margin-bottom: 1em")
         //- TODO: 현재 선택된 프로젝트로 연결해서 인원투입
         button.btn.btn-outline-dark.mr-3(type="button" onclick=`location.href='/management/prjInput/${result[0][5]}'` style="float: right") 인원투입
-      

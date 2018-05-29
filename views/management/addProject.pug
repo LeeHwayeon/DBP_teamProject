@@ -22,7 +22,7 @@ block content
           h2 Ordered
           select.custom-select(name="client", size="1")
             each client in clients
-              option(value=client[0]) #{client[1]}(#{client[0]})
+              option(value=client[0]) #{client[1]}(#{client[2]})
       .row.justify-content-start.mt-4
         .col(style="margin-bottom: 1em")
           button.btn.btn-outline-dark(type="submit", style="float: right") Add project

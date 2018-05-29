@@ -1,0 +1,17 @@
+extends ../layout
+
+//- 개발자 방출
+block content
+  form(action=`/management/outToPrj/${pNum}/${dId}`, method="post")
+    h1.text-center.mt-5= pName
+    .form-group
+      .row.align-items-center
+        .col.mt-4
+          h2 #{'개발자 : ' + dId}
+      .row.align-items-center.mt-4
+        .col
+          h2 방출일자
+          input.form-control(type="date", name="out_date" required)
+      .row.justify-content-start.mt-4
+        .col(style="margin-bottom: 1em")
+          button.btn.btn-outline-dark(type="submit", style="float: right") 방출
