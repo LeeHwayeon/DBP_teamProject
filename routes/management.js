@@ -389,7 +389,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
         }
 
         if (moment.duration(moment(isEnd.rows[0][0]).diff(req.body.join_date)).asDays().toFixed(1) < 0) {
-          alert('종료된 프로젝트에는 PM투입이 불가능합니다.');
+          alert('투입일은 프로젝트 진행기간 중이어야 합니다.');
           return res.redirect("/management/prj/" + prj);
         }
 

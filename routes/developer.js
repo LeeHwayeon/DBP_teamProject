@@ -61,7 +61,7 @@ oracledb.getConnection(dbConfig, (err, connection) => {
 
       if (result.rows.length === 0){
         alert("평가할 프로젝트가 없습니다.");
-        return res.redirect('back');
+        return res.render('index', { state: 'developer' });
       }
       res.render('developer/aboutCustomerEvaluation', { state: 'developer',  projects: result.rows });  
     });
