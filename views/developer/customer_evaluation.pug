@@ -2,29 +2,23 @@ extends ../layout
 
 //- 고객평가
 block content
-  h1.main 고객평가
-  .row.align-items-center.mt-4
-    .col
-      h3.mb-3.ml-3 선택된 프로젝트
-      input.form-control(type="text" name="project" value=`${selected}` readonly)
-  br      
-  form(action="/developer/addCustomer_evaluation", method='post')
-    .form-group
-      label(for="inputPnum") Project Number
-      input#inputpum.form-control(type="number" name="pnum" placeholder="Enter Project Number")
-    .form-group
-      label(for="inputEvaluated") Evaluated
-      input#inputevaluated.form-control(type="number" name="evaluated" placeholder="Evaluated")
-    .form-group
+  div.mr-3.ml-3
+    h1.text-center.mt-5= selected[0][1]
+    .row.mt-4
+      .col-sm-4
+      .col-sm-4
+        ul.list-group
+          li.list-group-item #{'프로젝트 시작일 : ' + moment(selected[0][2]).format('YYYY-MM-DD')}
+          li.list-group-item #{'프로젝트 종료일 : ' + moment(selected[0][3]).format('YYYY-MM-DD')}
+          li.list-group-item #{'발주처 : ' + selected[0][4]}
+  div.mr-5.ml-5
+    form(action=`/developer/addCustomer_evaluation/${pNum}`, method='post')
       label(for="inputWorkScore") Work Score
       input#inputworkscore.form-control(type="number" name="work_score" min="0" max="100" placeholder="0~100점")
-    .form-group
       label(for="inputWorkContent") Work content
       input#inputworkcontent.form-control(type="text" name="work_content" placeholder="ex) 고객의 요구사항을 다 만족함")
-    .form-group
       label(for="inputCommunicationScore") Communication Score
       input#inputcommunicationscore.form-control(type="number" name="communication_score" min="0" max="100" placeholder="0~100점")
-    .form-group
       label(for="inputCommunicationContent") Communication content
       input#inputcommunicationcontent.form-control(type="text" name="communication_content" placeholder="ex) 고객의 피드백을 즉각 반영함")
-    button.btn.btn-primary(type="submit") 평가 등록 
+      button.btn.btn-primary.mt-2(type="submit" style="margin-right: 0") 등록 
