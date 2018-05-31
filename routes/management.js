@@ -685,15 +685,27 @@ oracledb.getConnection(dbConfig, (err, connection) => {
       // 방출일 : 프로젝트 기간중이어야함
       if (moment.duration(moment(req.body.out_date).diff(dateResult.rows[0][0])).asDays().toFixed(1) >= 0
       && moment.duration(moment(req.body.out_date).diff(dateResult.rows[0][1])).asDays().toFixed(1) <= 0) {
-        var query = 'update project_input set out_date = to_date(\'' + req.body.out_date + '\', \'yyyy-MM-dd\') where project_num = ' + req.params.pNum + ' and developer_num = (select d.num from project_input pi, developer d where pi.developer_num = d.num and d.id = \'' + req.params.dId + '\' and rownum = 1)';
-
-        connection.execute(query, (err, result) => {
+        // 투입일 < 방출일이여야함
+        connection.execute('select join_date from project_input where project_num = ' + req.params.pNum + ' and developer_num = (select num from developer where id = \'' + req.params.dId + '\')', (err, isValid) => {
           if (err) {
             console.error(err.message);
             return;
           }
-          alert('방출되었습니다.');
-          return res.redirect('/management/aboutProject');
+
+          if (moment.duration(moment(req.body.out_date).diff(isValid.rows[0][0])).asDays().toFixed(1) < 0) {
+            alert('투입 날짜 이전에 방출할 수 없습니다.');
+            return res.redirect('/management/aboutProject');
+          }
+
+          var query = 'update project_input set out_date = to_date(\'' + req.body.out_date + '\', \'yyyy-MM-dd\') where project_num = ' + req.params.pNum + ' and developer_num = (select d.num from project_input pi, developer d where pi.developer_num = d.num and d.id = \'' + req.params.dId + '\' and rownum = 1)';
+          connection.execute(query, (err, result) => {
+            if (err) {
+              console.error(err.message);
+              return;
+            }
+            alert('방출되었습니다.');
+            return res.redirect('/management/aboutProject');
+          });
         });
       } else {
         alert('프로젝트 기간 이전 혹은 이후에 방출할 수 없습니다.');
